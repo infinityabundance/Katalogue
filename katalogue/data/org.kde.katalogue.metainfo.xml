@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.kde.katalogue</id>
+  <name>Katalogue</name>
+  <summary>Catalog removable volumes</summary>
+  <description>
+    <p>Katalogue helps you catalog removable media and search files offline.</p>
+  </description>
+  <launchable type="desktop-id">org.kde.katalogue.desktop</launchable>
+  <project_group>KDE</project_group>
+</component>

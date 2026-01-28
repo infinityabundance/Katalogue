@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Katalogue
+Comment=Media cataloging tool
+Exec=katalogue-gui
+Icon=org.kde.katalogue
+Type=Application
+Categories=Qt;KDE;Utility;

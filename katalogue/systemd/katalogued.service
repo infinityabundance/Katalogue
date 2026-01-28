@@ -1,0 +1,9 @@
+[Unit]
+Description=Katalogue daemon
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/katalogued
+
+[Install]
+WantedBy=default.target
