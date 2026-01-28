@@ -1,9 +1,7 @@
 #include "katalogue_database.h"
-#include "katalogue_scanner.h"
 
 #include <QCoreApplication>
 #include <QDebug>
-#include <QFileInfo>
 
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
@@ -12,39 +10,6 @@ int main(int argc, char **argv) {
     if (!db.openProject(QStringLiteral("./test.kdcatalog"))) {
         qWarning() << "Failed to open test database";
         return 1;
-    }
-
-    if (argc > 1) {
-        const QString mountPoint = QString::fromLocal8Bit(argv[1]);
-        QFileInfo info(mountPoint);
-
-        VolumeInfo volume;
-        volume.label = info.exists() ? info.fileName() : QStringLiteral("Scanned Volume");
-        if (volume.label.isEmpty()) {
-            volume.label = QStringLiteral("Scanned Volume");
-        }
-
-        KatalogueScanner scanner(&db);
-        QObject::connect(&scanner, &KatalogueScanner::progress, [](int percent, quint64 files) {
-            qDebug() << "Progress:" << percent << "files:" << files;
-        });
-        bool success = false;
-        QString errorString;
-        QObject::connect(&scanner, &KatalogueScanner::finished,
-                         [&](bool ok, const QString &error) {
-                             success = ok;
-                             errorString = error;
-                         });
-
-        scanner.scanVolume(mountPoint, volume);
-
-        if (!success) {
-            qWarning() << "Scan failed:" << errorString;
-            return 1;
-        }
-
-        qInfo() << "Scan complete.";
-        return 0;
     }
 
     VolumeInfo volume;
