@@ -15,6 +15,7 @@ bool KatalogueScanner::scan(const QString &rootPath,
                             const ScanOptions &options,
                             ProgressCallback progress) {
     m_cancelled.store(false);
+    m_cancelRequested.store(false);
 
     if (!db.isOpen()) {
         return false;
@@ -84,7 +85,7 @@ bool KatalogueScanner::scan(const QString &rootPath,
     ScanStats stats;
 
     while (it.hasNext()) {
-        if (m_cancelled.load()) {
+        if (m_cancelled.load() || m_cancelRequested.load(std::memory_order_relaxed)) {
             return false;
         }
 
@@ -101,6 +102,10 @@ bool KatalogueScanner::scan(const QString &rootPath,
         }
 
         if (isExcluded(relativePath, info.fileName(), options)) {
+            continue;
+        }
+
+        if (info.isSymLink()) {
             continue;
         }
 
@@ -140,6 +145,8 @@ bool KatalogueScanner::scan(const QString &rootPath,
 
             stats.files += 1;
             stats.totalBytes += fileInfo.size;
+        } else {
+            continue;
         }
 
         if (progress) {
@@ -154,6 +161,15 @@ bool KatalogueScanner::scan(const QString &rootPath,
 
 void KatalogueScanner::cancel() {
     m_cancelled.store(true);
+    requestCancel();
+}
+
+void KatalogueScanner::requestCancel() {
+    m_cancelRequested.store(true, std::memory_order_relaxed);
+}
+
+bool KatalogueScanner::isCancelRequested() const {
+    return m_cancelRequested.load(std::memory_order_relaxed);
 }
 
 bool KatalogueScanner::isExcluded(const QString &relativePath,

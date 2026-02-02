@@ -9,6 +9,8 @@
 #include <QDebug>
 
 namespace {
+constexpr int CURRENT_SCHEMA_VERSION = 3;
+
 bool execStatements(QSqlDatabase &db, const QList<QString> &statements) {
     QSqlQuery query(db);
     for (const auto &statement : statements) {
@@ -37,6 +39,35 @@ bool setSchemaVersion(QSqlDatabase &db, int version) {
     }
     return true;
 }
+
+bool tableExists(QSqlDatabase &db, const QString &name) {
+    QSqlQuery query(db);
+    query.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?");
+    query.addBindValue(name);
+    if (!query.exec()) {
+        return false;
+    }
+    return query.next();
+}
+
+bool setSchemaInfoVersion(QSqlDatabase &db, int version) {
+    QSqlQuery query(db);
+    if (!query.exec(QStringLiteral(
+            "CREATE TABLE IF NOT EXISTS schema_info ("
+            "id INTEGER PRIMARY KEY CHECK (id = 1),"
+            "version INTEGER NOT NULL"
+            ")"))) {
+        qWarning() << "Failed to create schema_info" << query.lastError();
+        return false;
+    }
+    query.prepare("INSERT OR REPLACE INTO schema_info (id, version) VALUES (1, ?)");
+    query.addBindValue(version);
+    if (!query.exec()) {
+        qWarning() << "Failed to set schema_info version" << query.lastError();
+        return false;
+    }
+    return true;
+}
 } // namespace
 
 KatalogueDatabase::KatalogueDatabase() = default;
@@ -54,6 +85,7 @@ bool KatalogueDatabase::openProject(const QString &path) {
     if (m_db.isOpen()) {
         m_db.close();
     }
+    m_lastErrorString.clear();
 
     if (m_connectionName.isEmpty()) {
         m_connectionName = QStringLiteral("katalogue_core_%1")
@@ -69,6 +101,7 @@ bool KatalogueDatabase::openProject(const QString &path) {
     m_db.setDatabaseName(path);
     if (!m_db.open()) {
         qWarning() << "Failed to open database" << m_db.lastError();
+        m_lastErrorString = m_db.lastError().text();
         return false;
     }
 
@@ -77,7 +110,24 @@ bool KatalogueDatabase::openProject(const QString &path) {
         qWarning() << "Failed to enable foreign keys" << pragma.lastError();
     }
 
-    return initializeSchema();
+    if (!tableExists(m_db, QStringLiteral("schema_info"))) {
+        if (!initializeSchema()) {
+            m_lastErrorString = QStringLiteral("Failed to initialize schema");
+            m_db.close();
+            return false;
+        }
+    }
+
+    const auto status = checkSchema();
+    if (status != SchemaStatus::Ok) {
+        if (m_lastErrorString.isEmpty()) {
+            m_lastErrorString = QStringLiteral("Schema check failed");
+        }
+        m_db.close();
+        return false;
+    }
+
+    return true;
 }
 
 bool KatalogueDatabase::isOpen() const {
@@ -270,12 +320,75 @@ bool KatalogueDatabase::initializeSchema() {
         version = 3;
     }
 
+    if (!setSchemaInfoVersion(m_db, CURRENT_SCHEMA_VERSION)) {
+        m_db.rollback();
+        return false;
+    }
+
+    if (!setSchemaVersion(m_db, CURRENT_SCHEMA_VERSION)) {
+        m_db.rollback();
+        return false;
+    }
+
     if (!m_db.commit()) {
         qWarning() << "Failed to commit schema" << m_db.lastError();
         return false;
     }
 
     return true;
+}
+
+KatalogueDatabase::SchemaStatus KatalogueDatabase::checkSchema() const {
+    if (!m_db.isOpen()) {
+        m_lastErrorString = QStringLiteral("Database not open");
+        return SchemaStatus::Missing;
+    }
+
+    if (!tableExists(m_db, QStringLiteral("schema_info"))) {
+        m_lastErrorString = QStringLiteral("schema_info table missing");
+        return SchemaStatus::Missing;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT version FROM schema_info WHERE id = 1");
+    if (!query.exec()) {
+        m_lastErrorString = QStringLiteral("Failed to read schema_info");
+        return SchemaStatus::Corrupt;
+    }
+    if (!query.next()) {
+        m_lastErrorString = QStringLiteral("schema_info row missing");
+        return SchemaStatus::Missing;
+    }
+
+    const int version = query.value(0).toInt();
+    if (version == CURRENT_SCHEMA_VERSION) {
+        return SchemaStatus::Ok;
+    }
+    if (version > CURRENT_SCHEMA_VERSION) {
+        m_lastErrorString = QStringLiteral("Catalog was created with a newer Katalogue version");
+        return SchemaStatus::Incompatible;
+    }
+    m_lastErrorString = QStringLiteral("Catalog schema is older than this version");
+    return SchemaStatus::Incompatible;
+}
+
+int KatalogueDatabase::schemaVersion() const {
+    if (!m_db.isOpen()) {
+        return -1;
+    }
+    QSqlQuery query(m_db);
+    query.prepare("SELECT version FROM schema_info WHERE id = 1");
+    if (!query.exec()) {
+        return -1;
+    }
+    if (!query.next()) {
+        return -1;
+    }
+    return query.value(0).toInt();
+}
+
+QString KatalogueDatabase::lastErrorString() const {
+    return m_lastErrorString;
 }
 
 int KatalogueDatabase::upsertVolume(const VolumeInfo &info) {

@@ -9,6 +9,11 @@ int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
 
     KatalogueDaemon daemon;
+    if (!daemon.init()) {
+        qCritical() << "Katalogue daemon initialization failed.";
+        return 1;
+    }
+
     if (!QDBusConnection::sessionBus().isConnected()) {
         qCritical() << "Failed to connect to session bus"
                     << QDBusConnection::sessionBus().lastError().message();

@@ -9,6 +9,13 @@ public:
     KatalogueDatabase();
     ~KatalogueDatabase();
 
+    enum class SchemaStatus {
+        Ok,
+        Missing,
+        Incompatible,
+        Corrupt
+    };
+
     struct ProjectStats {
         int volumeCount = 0;
         qint64 fileCount = 0;
@@ -17,6 +24,9 @@ public:
 
     bool openProject(const QString &path);
     bool isOpen() const;
+    SchemaStatus checkSchema() const;
+    int schemaVersion() const;
+    QString lastErrorString() const;
 
     int upsertVolume(const VolumeInfo &info);
     std::optional<VolumeInfo> findVolumeByFsUuid(const QString &fsUuid) const;
@@ -73,4 +83,5 @@ private:
 
     QSqlDatabase m_db;
     QString m_connectionName;
+    mutable QString m_lastErrorString;
 };

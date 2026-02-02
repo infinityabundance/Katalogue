@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QDir>
+#include <QDBusError>
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QStorageInfo>
@@ -16,12 +17,24 @@ QString defaultProjectPath() {
 KatalogueDaemon::KatalogueDaemon(QObject *parent)
     : QObject(parent) {
     m_projectPath = defaultProjectPath();
-    if (!m_projectPath.isEmpty()) {
-        QDir().mkpath(QFileInfo(m_projectPath).absolutePath());
-        m_db.openProject(m_projectPath);
-    }
-
     m_scanThread.setObjectName(QStringLiteral("katalogue-scan-thread"));
+}
+
+bool KatalogueDaemon::init() {
+    if (m_projectPath.isEmpty()) {
+        qCritical() << "Default project path is empty";
+        return false;
+    }
+    QDir().mkpath(QFileInfo(m_projectPath).absolutePath());
+    if (!m_db.openProject(m_projectPath)) {
+        qCritical() << "Failed to open default project:" << m_db.lastErrorString();
+        return false;
+    }
+    if (m_db.checkSchema() != KatalogueDatabase::SchemaStatus::Ok) {
+        qCritical() << "Catalog schema problem:" << m_db.lastErrorString();
+        return false;
+    }
+    return true;
 }
 
 QString KatalogueDaemon::Ping() const {
@@ -47,6 +60,9 @@ QVariantMap KatalogueDaemon::OpenProject(const QString &path) {
     const bool ok = m_db.openProject(absPath);
     if (ok) {
         m_projectPath = absPath;
+    } else if (calledFromDBus()) {
+        sendErrorReply(QDBusError::Failed,
+                       QStringLiteral("Failed to open catalog: %1").arg(m_db.lastErrorString()));
     }
 
     info.insert(QStringLiteral("ok"), ok);
@@ -98,6 +114,10 @@ uint KatalogueDaemon::StartScan(const QString &rootPath) {
     if (!m_db.isOpen()) {
         if (!m_db.openProject(m_projectPath.isEmpty() ? defaultProjectPath()
                                                       : m_projectPath)) {
+            if (calledFromDBus()) {
+                sendErrorReply(QDBusError::Failed,
+                               QStringLiteral("Failed to open catalog: %1").arg(m_db.lastErrorString()));
+            }
             return 0;
         }
     }
@@ -170,9 +190,12 @@ uint KatalogueDaemon::StartScan(const QString &rootPath) {
 
 bool KatalogueDaemon::CancelScan(uint scanId) {
     if (!m_jobs.contains(scanId)) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Scan ID not found"));
+        }
         return false;
     }
-    m_scanner.cancel();
+    m_scanner.requestCancel();
     m_jobs[scanId].status = ScanJob::Status::Cancelled;
     return true;
 }
@@ -187,6 +210,10 @@ QVariantMap KatalogueDaemon::GetScanStatus(uint scanId) const {
 
     const auto &job = it.value();
     result.insert(QStringLiteral("status"), statusToString(job.status));
+    result.insert(QStringLiteral("state"), statusToString(job.status));
+    if (!job.errorString.isEmpty()) {
+        result.insert(QStringLiteral("error"), job.errorString);
+    }
     result.insert(QStringLiteral("directories"), job.stats.directories);
     result.insert(QStringLiteral("files"), job.stats.files);
     result.insert(QStringLiteral("bytes"), static_cast<qint64>(job.stats.totalBytes));
@@ -195,6 +222,13 @@ QVariantMap KatalogueDaemon::GetScanStatus(uint scanId) const {
 
 QVariantMap KatalogueDaemon::ListVolumes() const {
     QVariantMap payload;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        payload.insert(QStringLiteral("items"), QVariantList());
+        return payload;
+    }
     const auto volumes = m_db.listVolumes();
     QVariantList list;
     list.reserve(volumes.size());
@@ -217,6 +251,12 @@ QVariantMap KatalogueDaemon::ListVolumes() const {
 
 QList<QVariantMap> KatalogueDaemon::ListDirectories(int volumeId, int parentId) const {
     QList<QVariantMap> entries;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return entries;
+    }
     const auto directories = m_db.listDirectories(volumeId, parentId);
     entries.reserve(directories.size());
     for (const auto &dir : directories) {
@@ -233,6 +273,12 @@ QList<QVariantMap> KatalogueDaemon::ListDirectories(int volumeId, int parentId) 
 
 QList<QVariantMap> KatalogueDaemon::ListFiles(int directoryId) const {
     QList<QVariantMap> entries;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return entries;
+    }
     const auto files = m_db.listFilesInDirectory(directoryId);
     QString volumeLabel;
     const auto directory = m_db.getDirectory(directoryId);
@@ -262,6 +308,13 @@ QList<QVariantMap> KatalogueDaemon::ListFiles(int directoryId) const {
 
 QVariantMap KatalogueDaemon::SearchByName(const QString &query, int limit, int offset) const {
     QVariantMap payload;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        payload.insert(QStringLiteral("items"), QVariantList());
+        return payload;
+    }
     const auto results = m_db.searchByName(query, limit, offset);
     QVariantList list;
     list.reserve(results.size());
@@ -285,6 +338,12 @@ QList<QVariantMap> KatalogueDaemon::Search(const QString &query,
                                            int limit,
                                            int offset) const {
     QList<QVariantMap> entries;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return entries;
+    }
     KatalogueDatabase::SearchFilters filters;
     if (volumeId >= 0) {
         filters.volumeId = volumeId;
@@ -314,16 +373,34 @@ QList<QVariantMap> KatalogueDaemon::Search(const QString &query,
 }
 
 QString KatalogueDaemon::GetFileNote(int fileId) const {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return {};
+    }
     const auto note = m_db.getNoteForFile(fileId);
     return note.value_or(QString());
 }
 
 void KatalogueDaemon::SetFileNote(int fileId, const QString &content) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
     m_db.setNoteForFile(fileId, content);
 }
 
 QList<QVariantMap> KatalogueDaemon::GetFileTags(int fileId) const {
     QList<QVariantMap> entries;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return entries;
+    }
     const auto tags = m_db.tagsForFile(fileId);
     entries.reserve(tags.size());
     for (const auto &tag : tags) {
@@ -336,15 +413,33 @@ QList<QVariantMap> KatalogueDaemon::GetFileTags(int fileId) const {
 }
 
 void KatalogueDaemon::AddFileTag(int fileId, const QString &key, const QString &value) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
     m_db.addTagToFile(fileId, key, value);
 }
 
 void KatalogueDaemon::RemoveFileTag(int fileId, const QString &key, const QString &value) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
     m_db.removeTagFromFile(fileId, key, value);
 }
 
 QList<QVariantMap> KatalogueDaemon::ListVirtualFolders(int parentId) const {
     QList<QVariantMap> entries;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return entries;
+    }
     const auto folders = m_db.listVirtualFolders(parentId);
     entries.reserve(folders.size());
     for (const auto &folder : folders) {
@@ -358,19 +453,43 @@ QList<QVariantMap> KatalogueDaemon::ListVirtualFolders(int parentId) const {
 }
 
 int KatalogueDaemon::CreateVirtualFolder(const QString &name, int parentId) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return -1;
+    }
     return m_db.createVirtualFolder(name, parentId);
 }
 
 void KatalogueDaemon::RenameVirtualFolder(int folderId, const QString &newName) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
     m_db.renameVirtualFolder(folderId, newName);
 }
 
 void KatalogueDaemon::DeleteVirtualFolder(int folderId) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
     m_db.deleteVirtualFolder(folderId);
 }
 
 QList<QVariantMap> KatalogueDaemon::ListVirtualFolderItems(int folderId) const {
     QList<QVariantMap> entries;
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return entries;
+    }
     const auto items = m_db.listVirtualFolderItems(folderId);
     entries.reserve(items.size());
     for (const auto &item : items) {
@@ -392,10 +511,22 @@ QList<QVariantMap> KatalogueDaemon::ListVirtualFolderItems(int folderId) const {
 }
 
 void KatalogueDaemon::AddFileToVirtualFolder(int folderId, int fileId) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
     m_db.addFileToVirtualFolder(folderId, fileId);
 }
 
 void KatalogueDaemon::RemoveFileFromVirtualFolder(int folderId, int fileId) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
     m_db.removeFileFromVirtualFolder(folderId, fileId);
 }
 
@@ -406,6 +537,7 @@ void KatalogueDaemon::runScan(uint scanId) {
     }
 
     it->status = ScanJob::Status::Running;
+    it->errorString.clear();
     emit ScanProgress(scanId, it->rootPath, it->stats.directories, it->stats.files, it->stats.totalBytes);
 
     if (it->existingVolume) {
@@ -431,8 +563,12 @@ void KatalogueDaemon::runScan(uint scanId) {
     });
 
     if (!ok) {
-        if (it->status != ScanJob::Status::Cancelled) {
+        if (m_scanner.isCancelRequested() || it->status == ScanJob::Status::Cancelled) {
+            it->status = ScanJob::Status::Cancelled;
+            it->errorString = QStringLiteral("Scan cancelled");
+        } else {
             it->status = ScanJob::Status::Failed;
+            it->errorString = QStringLiteral("Scan failed");
         }
     } else if (it->status != ScanJob::Status::Cancelled) {
         it->status = ScanJob::Status::Finished;
