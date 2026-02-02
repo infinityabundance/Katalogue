@@ -269,6 +269,40 @@ QVariantMap KatalogueDaemon::SearchByName(const QString &query, int limit, int o
     return payload;
 }
 
+QList<QVariantMap> KatalogueDaemon::Search(const QString &query,
+                                           int volumeId,
+                                           const QString &fileType,
+                                           int limit,
+                                           int offset) const {
+    QList<QVariantMap> entries;
+    KatalogueDatabase::SearchFilters filters;
+    if (volumeId >= 0) {
+        filters.volumeId = volumeId;
+    }
+    if (!fileType.trimmed().isEmpty()) {
+        filters.fileType = fileType.toLower();
+    }
+
+    const auto results = m_db.search(query, filters, limit, offset);
+    entries.reserve(results.size());
+    for (const auto &result : results) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("fileId"), result.fileId);
+        entry.insert(QStringLiteral("directoryId"), result.directoryId);
+        entry.insert(QStringLiteral("volumeId"), result.volumeId);
+        entry.insert(QStringLiteral("fileName"), result.fileName);
+        entry.insert(QStringLiteral("fullPath"), result.fullPath);
+        entry.insert(QStringLiteral("volumeLabel"), result.volumeLabel);
+        entry.insert(QStringLiteral("fileType"), result.fileType);
+        entry.insert(QStringLiteral("size"), static_cast<qint64>(result.size));
+        entry.insert(QStringLiteral("mtime"), result.mtime.isValid()
+                                             ? result.mtime.toString(Qt::ISODate)
+                                             : QString());
+        entries.append(entry);
+    }
+    return entries;
+}
+
 void KatalogueDaemon::runScan(uint scanId) {
     auto it = m_jobs.find(scanId);
     if (it == m_jobs.end()) {

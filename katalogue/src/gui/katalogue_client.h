@@ -42,6 +42,12 @@ public:
     Q_INVOKABLE QVariantMap scanStatus(int scanId) const;
     Q_INVOKABLE void refreshVolumes();
     Q_INVOKABLE void searchByName(const QString &query, int limit = 100, int offset = 0);
+    Q_INVOKABLE void search(const QString &query,
+                            int volumeId = -1,
+                            const QString &fileType = QString(),
+                            int limit = 200,
+                            int offset = 0);
+    Q_INVOKABLE void jumpToResult(int volumeId, int directoryId);
     Q_INVOKABLE void refreshProjectInfo();
     Q_INVOKABLE void loadRootForVolume(int volumeId);
     Q_INVOKABLE void loadDirectory(int directoryId);

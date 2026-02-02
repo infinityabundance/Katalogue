@@ -45,6 +45,14 @@
       <arg direction="in" type="i" name="offset"/>
       <arg direction="out" type="a{sv}" name="results"/>
     </method>
+    <method name="Search">
+      <arg direction="in" type="s" name="query"/>
+      <arg direction="in" type="i" name="volume_id"/>
+      <arg direction="in" type="s" name="file_type"/>
+      <arg direction="in" type="i" name="limit"/>
+      <arg direction="in" type="i" name="offset"/>
+      <arg direction="out" type="aa{sv}" name="results"/>
+    </method>
     <signal name="ScanProgress">
       <arg type="u" name="scan_id"/>
       <arg type="s" name="path"/>

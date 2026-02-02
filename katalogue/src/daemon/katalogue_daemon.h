@@ -43,6 +43,7 @@ public slots:
     QList<QVariantMap> ListDirectories(int volumeId, int parentId) const;
     QList<QVariantMap> ListFiles(int directoryId) const;
     QVariantMap SearchByName(const QString &query, int limit, int offset) const;
+    QList<QVariantMap> Search(const QString &query, int volumeId, const QString &fileType, int limit, int offset) const;
 
 signals:
     void ScanProgress(uint scanId, const QString &path, int directories, int files, qint64 bytes);
