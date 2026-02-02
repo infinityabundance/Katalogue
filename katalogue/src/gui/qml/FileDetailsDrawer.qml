@@ -28,42 +28,42 @@ Kirigami.OverlayDrawer {
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            text: fileInfo["name"] || fileInfo["fileName"] || "File details"
+            text: fileInfo["name"] || fileInfo["fileName"] || qsTr("File details")
             level: 2
         }
 
         Label {
-            text: "Volume: " + (fileInfo["volume_label"] || fileInfo["volumeLabel"] || "")
+            text: qsTr("Volume: %1").arg(fileInfo["volume_label"] || fileInfo["volumeLabel"] || "")
             visible: fileId > 0
         }
         Label {
-            text: "Path: " + (fileInfo["full_path"] || fileInfo["fullPath"] || "")
+            text: qsTr("Path: %1").arg(fileInfo["full_path"] || fileInfo["fullPath"] || "")
             elide: Text.ElideMiddle
             visible: fileId > 0
         }
         Label {
-            text: "Size: " + (fileInfo["size"] || 0) + " B"
+            text: qsTr("Size: %1 B").arg(fileInfo["size"] || 0)
             visible: fileId > 0
         }
 
         Kirigami.Heading {
-            text: "Notes"
+            text: qsTr("Notes")
             level: 3
             visible: fileId > 0
         }
         TextArea {
             id: noteArea
-            placeholderText: "Notes"
+            placeholderText: qsTr("Notes")
             visible: fileId > 0
         }
         Button {
-            text: "Save"
+            text: qsTr("Save")
             visible: fileId > 0
             onClicked: KatalogueClient.setFileNote(fileId, noteArea.text)
         }
 
         Kirigami.Heading {
-            text: "Tags"
+            text: qsTr("Tags")
             level: 3
             visible: fileId > 0
         }
@@ -72,16 +72,16 @@ Kirigami.OverlayDrawer {
             visible: fileId > 0
             TextField {
                 id: tagKeyField
-                placeholderText: "Key"
+                placeholderText: qsTr("Key")
                 width: parent.width * 0.4
             }
             TextField {
                 id: tagValueField
-                placeholderText: "Value"
+                placeholderText: qsTr("Value")
                 width: parent.width * 0.4
             }
             Button {
-                text: "Add"
+                text: qsTr("Add")
                 onClicked: {
                     if (tagKeyField.text.length > 0) {
                         KatalogueClient.addFileTag(fileId, tagKeyField.text, tagValueField.text)

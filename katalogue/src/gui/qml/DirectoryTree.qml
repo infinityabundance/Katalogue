@@ -10,7 +10,7 @@ Kirigami.Card {
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            text: "Directories"
+            text: qsTr("Directories")
             level: 3
         }
 
@@ -47,8 +47,8 @@ Kirigami.Card {
 
         Label {
             visible: KatalogueClient.selectedDirectoryId < 0
-            text: "Select a folder to see its contents."
-            color: "#888888"
+            text: qsTr("Select a folder to see its contents.")
+            color: Kirigami.Theme.disabledTextColor
         }
     }
 }

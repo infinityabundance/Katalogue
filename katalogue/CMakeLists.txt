@@ -7,12 +7,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Sql DBus Quick Qml)
+find_package(Qt6 COMPONENTS LinguistTools)
 
 qt_standard_project_setup()
 
 enable_testing()
 
 option(ENABLE_VVV_IMPORT "Build optional VVV catalog import tool" OFF)
+
+set(KATALOGUE_TRANSLATIONS
+    translations/katalogue_en.ts
+)
+
+if (Qt6LinguistTools_FOUND)
+    qt_add_translations(katalogue_translations
+        TS_FILES ${KATALOGUE_TRANSLATIONS}
+    )
+endif()
 
 add_library(katalogue-core
     src/core/katalogue_database.cpp

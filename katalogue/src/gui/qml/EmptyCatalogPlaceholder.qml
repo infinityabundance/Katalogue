@@ -11,15 +11,15 @@ Kirigami.Card {
     contentItem: Column {
         spacing: Kirigami.Units.smallSpacing
         Kirigami.Heading {
-            text: "No volumes cataloged yet"
+            text: qsTr("No volumes cataloged yet")
             level: 2
         }
         Label {
-            text: "Use Scan… to index a drive, folder, or disc into this catalog."
+            text: qsTr("Use Scan… to index a drive, folder, or disc into this catalog.")
             wrapMode: Text.WordWrap
         }
         Button {
-            text: "Scan now"
+            text: qsTr("Scan now")
             onClicked: placeholder.scanRequested()
         }
     }
