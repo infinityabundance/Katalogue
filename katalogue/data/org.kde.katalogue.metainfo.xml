@@ -3,6 +3,10 @@
   <id>org.kde.katalogue</id>
   <name>Katalogue</name>
   <summary>Catalog removable volumes</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <developer_name>Katalogue contributors</developer_name>
+  <url type="homepage">https://github.com/infinityabundance/Katalogue</url>
   <description>
     <p>Katalogue helps you catalog removable media and search files offline.</p>
   </description>
