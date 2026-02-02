@@ -22,6 +22,13 @@ Kirigami.Card {
                 width: parent.width
                 height: Kirigami.Units.gridUnit * 2
                 property int folderId: modelData["id"]
+                property bool isSelected: folderId === KatalogueClient.selectedVirtualFolderId
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Kirigami.Units.smallSpacing
+                    color: isSelected ? Kirigami.Theme.highlightColor : "transparent"
+                }
 
                 Row {
                     anchors.fill: parent
@@ -29,6 +36,7 @@ Kirigami.Card {
                     Label {
                         anchors.verticalCenter: parent.verticalCenter
                         text: modelData["name"]
+                        color: isSelected ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
                     }
                     Button {
                         text: "Delete"

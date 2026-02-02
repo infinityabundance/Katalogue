@@ -1155,6 +1155,26 @@ QList<QPair<QString, QString>> KatalogueDatabase::tagsForFile(int fileId) const 
     return tags;
 }
 
+bool KatalogueDatabase::renameVolume(int volumeId, const QString &newLabel) {
+    if (!m_db.isOpen() || volumeId < 0) {
+        return false;
+    }
+    const QString trimmed = newLabel.trimmed();
+    if (trimmed.isEmpty()) {
+        return false;
+    }
+    QSqlQuery query(m_db);
+    query.prepare("UPDATE volumes SET label = ?, updated_at = ? WHERE id = ?");
+    query.addBindValue(trimmed);
+    query.addBindValue(QDateTime::currentDateTimeUtc().toSecsSinceEpoch());
+    query.addBindValue(volumeId);
+    if (!query.exec()) {
+        qWarning() << "Failed to rename volume" << query.lastError();
+        return false;
+    }
+    return true;
+}
+
 QList<SearchResult> KatalogueDatabase::listAllFiles(const std::optional<int> &volumeId) const {
     QList<SearchResult> results;
     if (!m_db.isOpen()) {

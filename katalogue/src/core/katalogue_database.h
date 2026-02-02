@@ -65,6 +65,7 @@ public:
     bool addTagToFile(int fileId, const QString &key, const QString &value);
     bool removeTagFromFile(int fileId, const QString &key, const QString &value);
     QList<QPair<QString, QString>> tagsForFile(int fileId) const;
+    bool renameVolume(int volumeId, const QString &newLabel);
     QList<SearchResult> listAllFiles(const std::optional<int> &volumeId = std::nullopt) const;
 
     int createVirtualFolder(const QString &name, int parentId = -1);

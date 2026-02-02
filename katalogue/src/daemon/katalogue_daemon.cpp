@@ -530,6 +530,16 @@ void KatalogueDaemon::RemoveFileFromVirtualFolder(int folderId, int fileId) {
     m_db.removeFileFromVirtualFolder(folderId, fileId);
 }
 
+void KatalogueDaemon::RenameVolume(int volumeId, const QString &newLabel) {
+    if (!m_db.isOpen()) {
+        if (calledFromDBus()) {
+            sendErrorReply(QDBusError::Failed, QStringLiteral("Database is not open"));
+        }
+        return;
+    }
+    m_db.renameVolume(volumeId, newLabel);
+}
+
 void KatalogueDaemon::runScan(uint scanId) {
     auto it = m_jobs.find(scanId);
     if (it == m_jobs.end()) {

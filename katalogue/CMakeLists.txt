@@ -92,6 +92,8 @@ qt_add_qml_module(katalogue-gui
         src/gui/qml/VolumeSidebar.qml
         src/gui/qml/DirectoryTree.qml
         src/gui/qml/FileView.qml
+        src/gui/qml/FileDetailsDrawer.qml
+        src/gui/qml/EmptyCatalogPlaceholder.qml
         src/gui/qml/VirtualFoldersSidebar.qml
         src/gui/qml/VirtualFolderItemsView.qml
 )
