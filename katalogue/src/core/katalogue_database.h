@@ -31,6 +31,7 @@ public:
     QList<DirectoryInfo> listDirectories(int volumeId, int parentId) const;
     QList<FileInfo> listFilesInDirectory(int directoryId) const;
     std::optional<DirectoryInfo> getDirectory(int directoryId) const;
+    std::optional<QString> getVolumeLabel(int volumeId) const;
 
     struct SearchFilters {
         std::optional<int> volumeId;
@@ -45,6 +46,15 @@ public:
     QList<SearchResult> searchByName(const QString &query,
                                      int limit = 100,
                                      int offset = 0) const;
+
+    std::optional<QString> getNoteForFile(int fileId) const;
+    std::optional<QString> getNoteForDirectory(int directoryId) const;
+    bool setNoteForFile(int fileId, const QString &content);
+    bool setNoteForDirectory(int directoryId, const QString &content);
+
+    bool addTagToFile(int fileId, const QString &key, const QString &value);
+    bool removeTagFromFile(int fileId, const QString &key, const QString &value);
+    QList<QPair<QString, QString>> tagsForFile(int fileId) const;
 
 private:
     bool initializeSchema();

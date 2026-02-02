@@ -48,6 +48,11 @@ public:
                             int limit = 200,
                             int offset = 0);
     Q_INVOKABLE void jumpToResult(int volumeId, int directoryId);
+    Q_INVOKABLE QString getFileNote(int fileId);
+    Q_INVOKABLE void setFileNote(int fileId, const QString &content);
+    Q_INVOKABLE QVariantList getFileTags(int fileId);
+    Q_INVOKABLE void addFileTag(int fileId, const QString &key, const QString &value);
+    Q_INVOKABLE void removeFileTag(int fileId, const QString &key, const QString &value);
     Q_INVOKABLE void refreshProjectInfo();
     Q_INVOKABLE void loadRootForVolume(int volumeId);
     Q_INVOKABLE void loadDirectory(int directoryId);

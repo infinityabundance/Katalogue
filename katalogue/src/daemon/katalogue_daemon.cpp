@@ -234,17 +234,27 @@ QList<QVariantMap> KatalogueDaemon::ListDirectories(int volumeId, int parentId) 
 QList<QVariantMap> KatalogueDaemon::ListFiles(int directoryId) const {
     QList<QVariantMap> entries;
     const auto files = m_db.listFilesInDirectory(directoryId);
+    QString volumeLabel;
+    const auto directory = m_db.getDirectory(directoryId);
+    if (directory.has_value()) {
+        const auto label = m_db.getVolumeLabel(directory->volumeId);
+        if (label.has_value()) {
+            volumeLabel = label.value();
+        }
+    }
     entries.reserve(files.size());
     for (const auto &file : files) {
         QVariantMap entry;
         entry.insert(QStringLiteral("id"), file.id);
         entry.insert(QStringLiteral("directory_id"), file.directoryId);
         entry.insert(QStringLiteral("name"), file.name);
+        entry.insert(QStringLiteral("full_path"), file.fullPath);
         entry.insert(QStringLiteral("size"), static_cast<qint64>(file.size));
         entry.insert(QStringLiteral("mtime"), file.mtime.isValid()
                                               ? file.mtime.toString(Qt::ISODate)
                                               : QString());
         entry.insert(QStringLiteral("file_type"), file.fileType);
+        entry.insert(QStringLiteral("volume_label"), volumeLabel);
         entries.append(entry);
     }
     return entries;
@@ -301,6 +311,36 @@ QList<QVariantMap> KatalogueDaemon::Search(const QString &query,
         entries.append(entry);
     }
     return entries;
+}
+
+QString KatalogueDaemon::GetFileNote(int fileId) const {
+    const auto note = m_db.getNoteForFile(fileId);
+    return note.value_or(QString());
+}
+
+void KatalogueDaemon::SetFileNote(int fileId, const QString &content) {
+    m_db.setNoteForFile(fileId, content);
+}
+
+QList<QVariantMap> KatalogueDaemon::GetFileTags(int fileId) const {
+    QList<QVariantMap> entries;
+    const auto tags = m_db.tagsForFile(fileId);
+    entries.reserve(tags.size());
+    for (const auto &tag : tags) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("key"), tag.first);
+        entry.insert(QStringLiteral("value"), tag.second);
+        entries.append(entry);
+    }
+    return entries;
+}
+
+void KatalogueDaemon::AddFileTag(int fileId, const QString &key, const QString &value) {
+    m_db.addTagToFile(fileId, key, value);
+}
+
+void KatalogueDaemon::RemoveFileTag(int fileId, const QString &key, const QString &value) {
+    m_db.removeTagFromFile(fileId, key, value);
 }
 
 void KatalogueDaemon::runScan(uint scanId) {

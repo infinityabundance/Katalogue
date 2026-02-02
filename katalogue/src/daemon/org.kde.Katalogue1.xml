@@ -53,6 +53,28 @@
       <arg direction="in" type="i" name="offset"/>
       <arg direction="out" type="aa{sv}" name="results"/>
     </method>
+    <method name="GetFileNote">
+      <arg direction="in" type="i" name="file_id"/>
+      <arg direction="out" type="s" name="content"/>
+    </method>
+    <method name="SetFileNote">
+      <arg direction="in" type="i" name="file_id"/>
+      <arg direction="in" type="s" name="content"/>
+    </method>
+    <method name="GetFileTags">
+      <arg direction="in" type="i" name="file_id"/>
+      <arg direction="out" type="aa{sv}" name="tags"/>
+    </method>
+    <method name="AddFileTag">
+      <arg direction="in" type="i" name="file_id"/>
+      <arg direction="in" type="s" name="key"/>
+      <arg direction="in" type="s" name="value"/>
+    </method>
+    <method name="RemoveFileTag">
+      <arg direction="in" type="i" name="file_id"/>
+      <arg direction="in" type="s" name="key"/>
+      <arg direction="in" type="s" name="value"/>
+    </method>
     <signal name="ScanProgress">
       <arg type="u" name="scan_id"/>
       <arg type="s" name="path"/>

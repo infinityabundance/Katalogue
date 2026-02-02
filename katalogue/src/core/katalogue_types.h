@@ -28,6 +28,7 @@ struct FileInfo {
     int id = -1;
     int directoryId = -1;
     QString name;
+    QString fullPath;
     qint64 size = 0;
     QDateTime mtime;
     QDateTime ctime;
