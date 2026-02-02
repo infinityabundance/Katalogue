@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Sql DBus Quick Qml)
+find_package(Qt6 REQUIRED COMPONENTS Core Sql DBus Quick Qml Test)
 find_package(Qt6 COMPONENTS LinguistTools)
 
 qt_standard_project_setup()
@@ -127,6 +127,8 @@ target_link_libraries(core_test
 )
 
 add_test(NAME core_test COMMAND core_test)
+
+add_subdirectory(tests)
 
 install(TARGETS katalogue-gui katalogued katalogue-export
         RUNTIME DESTINATION bin)

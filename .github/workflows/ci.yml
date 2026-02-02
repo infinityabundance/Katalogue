@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qt6-base-dev qt6-base-dev-tools qt6-declarative-dev \
+            libqt6sql6-sqlite qt6-tools-dev-tools \
+            cmake ninja-build build-essential \
+            dbus-x11
+
+      - name: Configure
+        run: |
+          cmake -S katalogue -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: dbus-run-session -- ctest --test-dir build --output-on-failure
