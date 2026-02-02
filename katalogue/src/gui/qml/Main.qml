@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs as Dialogs
 import org.kde.kirigami as Kirigami
 import org.kde.Katalogue 1.0
 
@@ -47,9 +48,53 @@ Kirigami.ApplicationWindow {
 
                         Kirigami.ActionTextField {
                             id: scanField
-                            width: parent.width * 0.4
+                            width: parent.width * 0.25
                             placeholderText: "Scan root path"
                             onAccepted: KatalogueClient.startScan(text)
+                        }
+
+                        Button {
+                            text: "Scan..."
+                            onClicked: scanDialog.open()
+                        }
+                    }
+
+                    Kirigami.Card {
+                        visible: KatalogueClient.activeScans.length > 0
+                        width: parent.width
+
+                        contentItem: Column {
+                            spacing: Kirigami.Units.smallSpacing
+
+                            Kirigami.Heading {
+                                text: "Scans"
+                                level: 3
+                            }
+
+                            ListView {
+                                width: parent.width
+                                height: Math.min(160, contentHeight)
+                                model: KatalogueClient.activeScans
+                                delegate: Row {
+                                    spacing: Kirigami.Units.smallSpacing
+                                    Label {
+                                        text: modelData["rootPath"]
+                                        elide: Text.ElideMiddle
+                                        width: parent.width * 0.6
+                                    }
+                                    Label { text: modelData["status"] }
+                                    Label {
+                                        text: modelData["percent"] >= 0
+                                              ? modelData["percent"] + "%"
+                                              : ""
+                                    }
+                                    Button {
+                                        text: "Cancel"
+                                        visible: modelData["status"] === "running"
+                                        onClicked: KatalogueClient.cancelScan(modelData["id"])
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -63,6 +108,18 @@ Kirigami.ApplicationWindow {
                         width: parent.width
                     }
                 }
+            }
+        }
+    }
+
+    Dialogs.FolderDialog {
+        id: scanDialog
+        title: "Select root folder to scan"
+        onAccepted: {
+            const url = selectedFolder.toString()
+            if (url.length > 0) {
+                const path = url.replace("file://", "")
+                KatalogueClient.startScan(path)
             }
         }
     }

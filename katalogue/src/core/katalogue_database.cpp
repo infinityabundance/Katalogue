@@ -248,6 +248,73 @@ int KatalogueDatabase::upsertVolume(const VolumeInfo &info) {
     return insert.lastInsertId().toInt();
 }
 
+std::optional<VolumeInfo> KatalogueDatabase::findVolumeByFsUuid(const QString &fsUuid) const {
+    if (!m_db.isOpen() || fsUuid.trimmed().isEmpty()) {
+        return std::nullopt;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT id, label, description, fs_uuid, fs_type, physical_hint, total_size, "
+                  "created_at, updated_at FROM volumes WHERE fs_uuid = ? LIMIT 1");
+    query.addBindValue(fsUuid);
+    if (!query.exec()) {
+        qWarning() << "Failed to find volume by fs_uuid" << query.lastError();
+        return std::nullopt;
+    }
+    if (!query.next()) {
+        return std::nullopt;
+    }
+
+    VolumeInfo info;
+    info.id = query.value(0).toInt();
+    info.label = query.value(1).toString();
+    info.description = query.value(2).toString();
+    info.fsUuid = query.value(3).toString();
+    info.fsType = query.value(4).toString();
+    info.physicalHint = query.value(5).toString();
+    info.totalSize = query.value(6).toLongLong();
+    info.createdAt = QDateTime::fromSecsSinceEpoch(query.value(7).toLongLong(), Qt::UTC);
+    info.updatedAt = QDateTime::fromSecsSinceEpoch(query.value(8).toLongLong(), Qt::UTC);
+    return info;
+}
+
+bool KatalogueDatabase::clearVolumeContents(int volumeId) {
+    if (!m_db.isOpen() || volumeId < 0) {
+        return false;
+    }
+
+    if (!m_db.transaction()) {
+        qWarning() << "Failed to start clear volume transaction" << m_db.lastError();
+        return false;
+    }
+
+    QSqlQuery deleteFiles(m_db);
+    deleteFiles.prepare("DELETE FROM files WHERE directory_id IN "
+                        "(SELECT id FROM directories WHERE volume_id = ?)");
+    deleteFiles.addBindValue(volumeId);
+    if (!deleteFiles.exec()) {
+        qWarning() << "Failed to clear files for volume" << deleteFiles.lastError();
+        m_db.rollback();
+        return false;
+    }
+
+    QSqlQuery deleteDirs(m_db);
+    deleteDirs.prepare("DELETE FROM directories WHERE volume_id = ?");
+    deleteDirs.addBindValue(volumeId);
+    if (!deleteDirs.exec()) {
+        qWarning() << "Failed to clear directories for volume" << deleteDirs.lastError();
+        m_db.rollback();
+        return false;
+    }
+
+    if (!m_db.commit()) {
+        qWarning() << "Failed to commit clear volume" << m_db.lastError();
+        return false;
+    }
+
+    return true;
+}
+
 int KatalogueDatabase::upsertDirectory(const DirectoryInfo &info) {
     if (!m_db.isOpen()) {
         return -1;
