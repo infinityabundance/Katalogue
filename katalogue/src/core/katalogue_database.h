@@ -15,6 +15,8 @@ public:
     int upsertVolume(const VolumeInfo &info);
     int upsertDirectory(const DirectoryInfo &info);
     int insertFile(const FileInfo &info);
+    int upsertFile(const FileInfo &info);
+    bool deleteFile(int fileId);
 
     QList<VolumeInfo> listVolumes() const;
 

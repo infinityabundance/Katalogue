@@ -1,10 +1,42 @@
 #include "katalogue_database.h"
 
 #include <QDateTime>
+#include <QList>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
 #include <QDebug>
+
+namespace {
+bool execStatements(QSqlDatabase &db, const QList<QString> &statements) {
+    QSqlQuery query(db);
+    for (const auto &statement : statements) {
+        if (!query.exec(statement)) {
+            qWarning() << "Failed to apply schema" << query.lastError();
+            return false;
+        }
+    }
+    return true;
+}
+
+int currentSchemaVersion(QSqlDatabase &db) {
+    QSqlQuery query(db);
+    if (!query.exec(QStringLiteral("PRAGMA user_version"))) {
+        qWarning() << "Failed to read schema version" << query.lastError();
+        return -1;
+    }
+    return query.next() ? query.value(0).toInt() : -1;
+}
+
+bool setSchemaVersion(QSqlDatabase &db, int version) {
+    QSqlQuery query(db);
+    if (!query.exec(QStringLiteral("PRAGMA user_version = %1").arg(version))) {
+        qWarning() << "Failed to set schema version" << query.lastError();
+        return false;
+    }
+    return true;
+}
+} // namespace
 
 KatalogueDatabase::KatalogueDatabase() = default;
 
@@ -39,6 +71,11 @@ bool KatalogueDatabase::openProject(const QString &path) {
         return false;
     }
 
+    QSqlQuery pragma(m_db);
+    if (!pragma.exec(QStringLiteral("PRAGMA foreign_keys = ON"))) {
+        qWarning() << "Failed to enable foreign keys" << pragma.lastError();
+    }
+
     return initializeSchema();
 }
 
@@ -56,50 +93,102 @@ bool KatalogueDatabase::initializeSchema() {
         return false;
     }
 
-    QSqlQuery query(m_db);
-    const char *schemaStatements[] = {
-        "CREATE TABLE IF NOT EXISTS volumes ("
-        "id INTEGER PRIMARY KEY,"
-        "label TEXT NOT NULL,"
-        "description TEXT,"
-        "fs_uuid TEXT,"
-        "fs_type TEXT,"
-        "physical_hint TEXT,"
-        "total_size INTEGER,"
-        "created_at INTEGER,"
-        "updated_at INTEGER"
-        ");",
-        "CREATE TABLE IF NOT EXISTS directories ("
-        "id INTEGER PRIMARY KEY,"
-        "volume_id INTEGER NOT NULL REFERENCES volumes(id),"
-        "parent_id INTEGER REFERENCES directories(id),"
-        "name TEXT NOT NULL,"
-        "full_path TEXT NOT NULL,"
-        "UNIQUE(volume_id, full_path)"
-        ");",
-        "CREATE TABLE IF NOT EXISTS files ("
-        "id INTEGER PRIMARY KEY,"
-        "directory_id INTEGER NOT NULL REFERENCES directories(id),"
-        "name TEXT NOT NULL,"
-        "size INTEGER,"
-        "mtime INTEGER,"
-        "ctime INTEGER,"
-        "file_type TEXT,"
-        "hash TEXT,"
-        "attrs INTEGER"
-        ");",
-        "CREATE VIRTUAL TABLE IF NOT EXISTS file_fts USING fts5("
-        "name,"
-        "full_path,"
-        "tokenize='porter'"
-        ");"};
+    int version = currentSchemaVersion(m_db);
+    if (version < 0) {
+        m_db.rollback();
+        return false;
+    }
 
-    for (const char *statement : schemaStatements) {
-        if (!query.exec(QString::fromUtf8(statement))) {
-            qWarning() << "Failed to apply schema" << query.lastError();
+    if (version == 0) {
+        const QList<QString> schemaStatements = {
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS volumes ("
+                "id INTEGER PRIMARY KEY,"
+                "label TEXT NOT NULL,"
+                "description TEXT,"
+                "fs_uuid TEXT,"
+                "fs_type TEXT,"
+                "physical_hint TEXT,"
+                "total_size INTEGER,"
+                "created_at INTEGER,"
+                "updated_at INTEGER"
+                ");"),
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS directories ("
+                "id INTEGER PRIMARY KEY,"
+                "volume_id INTEGER NOT NULL REFERENCES volumes(id) ON DELETE CASCADE,"
+                "parent_id INTEGER REFERENCES directories(id) ON DELETE CASCADE,"
+                "name TEXT NOT NULL,"
+                "full_path TEXT NOT NULL,"
+                "UNIQUE(volume_id, full_path)"
+                ");"),
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS files ("
+                "id INTEGER PRIMARY KEY,"
+                "directory_id INTEGER NOT NULL REFERENCES directories(id) ON DELETE CASCADE,"
+                "name TEXT NOT NULL,"
+                "size INTEGER,"
+                "mtime INTEGER,"
+                "ctime INTEGER,"
+                "file_type TEXT,"
+                "hash TEXT,"
+                "attrs INTEGER,"
+                "UNIQUE(directory_id, name)"
+                ");"),
+            QStringLiteral(
+                "CREATE VIRTUAL TABLE IF NOT EXISTS file_fts USING fts5("
+                "name,"
+                "full_path,"
+                "tokenize='porter'"
+                ");"),
+            QStringLiteral(
+                "CREATE INDEX IF NOT EXISTS directories_volume_idx ON directories(volume_id);"),
+            QStringLiteral(
+                "CREATE INDEX IF NOT EXISTS directories_parent_idx ON directories(parent_id);"),
+            QStringLiteral(
+                "CREATE INDEX IF NOT EXISTS files_directory_idx ON files(directory_id);"),
+            QStringLiteral(
+                "CREATE UNIQUE INDEX IF NOT EXISTS volumes_fs_uuid_idx ON volumes(fs_uuid) WHERE fs_uuid IS NOT NULL;"),
+            QStringLiteral(
+                "CREATE TRIGGER IF NOT EXISTS files_ai AFTER INSERT ON files BEGIN "
+                "INSERT INTO file_fts(rowid, name, full_path) "
+                "VALUES (new.id, new.name, "
+                "(SELECT full_path || '/' || new.name FROM directories WHERE id = new.directory_id)); "
+                "END;"),
+            QStringLiteral(
+                "CREATE TRIGGER IF NOT EXISTS files_au AFTER UPDATE OF name, directory_id ON files BEGIN "
+                "DELETE FROM file_fts WHERE rowid = old.id; "
+                "INSERT INTO file_fts(rowid, name, full_path) "
+                "VALUES (new.id, new.name, "
+                "(SELECT full_path || '/' || new.name FROM directories WHERE id = new.directory_id)); "
+                "END;"),
+            QStringLiteral(
+                "CREATE TRIGGER IF NOT EXISTS files_ad AFTER DELETE ON files BEGIN "
+                "DELETE FROM file_fts WHERE rowid = old.id; "
+                "END;"),
+            QStringLiteral(
+                "CREATE TRIGGER IF NOT EXISTS directories_au AFTER UPDATE OF full_path ON directories BEGIN "
+                "UPDATE file_fts SET full_path = "
+                "(SELECT new.full_path || '/' || files.name FROM files WHERE files.id = file_fts.rowid) "
+                "WHERE rowid IN (SELECT id FROM files WHERE directory_id = new.id); "
+                "END;"),
+            QStringLiteral(
+                "INSERT INTO file_fts(rowid, name, full_path) "
+                "SELECT files.id, files.name, directories.full_path || '/' || files.name "
+                "FROM files JOIN directories ON directories.id = files.directory_id "
+                "WHERE files.id NOT IN (SELECT rowid FROM file_fts);")
+        };
+
+        if (!execStatements(m_db, schemaStatements)) {
             m_db.rollback();
             return false;
         }
+
+        if (!setSchemaVersion(m_db, 1)) {
+            m_db.rollback();
+            return false;
+        }
+        version = 1;
     }
 
     if (!m_db.commit()) {
@@ -205,8 +294,32 @@ int KatalogueDatabase::upsertDirectory(const DirectoryInfo &info) {
 }
 
 int KatalogueDatabase::insertFile(const FileInfo &info) {
+    return upsertFile(info);
+}
+
+int KatalogueDatabase::upsertFile(const FileInfo &info) {
     if (!m_db.isOpen()) {
         return -1;
+    }
+
+    if (info.id >= 0) {
+        QSqlQuery update(m_db);
+        update.prepare("UPDATE files SET directory_id = ?, name = ?, size = ?, mtime = ?, ctime = ?, "
+                       "file_type = ?, hash = ?, attrs = ? WHERE id = ?");
+        update.addBindValue(info.directoryId);
+        update.addBindValue(info.name);
+        update.addBindValue(info.size);
+        update.addBindValue(info.mtime.isValid() ? info.mtime.toSecsSinceEpoch() : QVariant(QVariant::LongLong));
+        update.addBindValue(info.ctime.isValid() ? info.ctime.toSecsSinceEpoch() : QVariant(QVariant::LongLong));
+        update.addBindValue(info.fileType);
+        update.addBindValue(info.hash);
+        update.addBindValue(info.attrs);
+        update.addBindValue(info.id);
+        if (!update.exec()) {
+            qWarning() << "Failed to update file" << update.lastError();
+            return -1;
+        }
+        return info.id;
     }
 
     QSqlQuery insert(m_db);
@@ -222,24 +335,51 @@ int KatalogueDatabase::insertFile(const FileInfo &info) {
     insert.addBindValue(info.attrs);
 
     if (!insert.exec()) {
+        if (insert.lastError().isValid()) {
+            QSqlQuery update(m_db);
+            update.prepare("UPDATE files SET size = ?, mtime = ?, ctime = ?, file_type = ?, hash = ?, attrs = ? "
+                           "WHERE directory_id = ? AND name = ?");
+            update.addBindValue(info.size);
+            update.addBindValue(info.mtime.isValid() ? info.mtime.toSecsSinceEpoch() : QVariant(QVariant::LongLong));
+            update.addBindValue(info.ctime.isValid() ? info.ctime.toSecsSinceEpoch() : QVariant(QVariant::LongLong));
+            update.addBindValue(info.fileType);
+            update.addBindValue(info.hash);
+            update.addBindValue(info.attrs);
+            update.addBindValue(info.directoryId);
+            update.addBindValue(info.name);
+            if (!update.exec()) {
+                qWarning() << "Failed to update existing file" << update.lastError();
+                return -1;
+            }
+
+            QSqlQuery select(m_db);
+            select.prepare("SELECT id FROM files WHERE directory_id = ? AND name = ?");
+            select.addBindValue(info.directoryId);
+            select.addBindValue(info.name);
+            if (select.exec() && select.next()) {
+                return select.value(0).toInt();
+            }
+        }
         qWarning() << "Failed to insert file" << insert.lastError();
         return -1;
     }
 
-    int fileId = insert.lastInsertId().toInt();
-    const QString fullPath = directoryFullPath(info.directoryId) + '/' + info.name;
+    return insert.lastInsertId().toInt();
+}
 
-    QSqlQuery fts(m_db);
-    fts.prepare("INSERT INTO file_fts (rowid, name, full_path) VALUES (?, ?, ?)");
-    fts.addBindValue(fileId);
-    fts.addBindValue(info.name);
-    fts.addBindValue(fullPath);
-
-    if (!fts.exec()) {
-        qWarning() << "Failed to insert FTS row" << fts.lastError();
+bool KatalogueDatabase::deleteFile(int fileId) {
+    if (!m_db.isOpen()) {
+        return false;
     }
 
-    return fileId;
+    QSqlQuery query(m_db);
+    query.prepare("DELETE FROM files WHERE id = ?");
+    query.addBindValue(fileId);
+    if (!query.exec()) {
+        qWarning() << "Failed to delete file" << query.lastError();
+        return false;
+    }
+    return true;
 }
 
 QList<VolumeInfo> KatalogueDatabase::listVolumes() const {
