@@ -22,6 +22,44 @@ QVariantList KatalogueClient::searchResults() const {
     return m_searchResults;
 }
 
+int KatalogueClient::selectedVolumeId() const {
+    return m_selectedVolumeId;
+}
+
+void KatalogueClient::setSelectedVolumeId(int volumeId) {
+    if (m_selectedVolumeId == volumeId) {
+        return;
+    }
+    m_selectedVolumeId = volumeId;
+    emit selectedVolumeIdChanged();
+    if (m_selectedVolumeId >= 0) {
+        loadRootForVolume(m_selectedVolumeId);
+    }
+}
+
+int KatalogueClient::selectedDirectoryId() const {
+    return m_selectedDirectoryId;
+}
+
+void KatalogueClient::setSelectedDirectoryId(int directoryId) {
+    if (m_selectedDirectoryId == directoryId) {
+        return;
+    }
+    m_selectedDirectoryId = directoryId;
+    emit selectedDirectoryIdChanged();
+    if (m_selectedDirectoryId >= 0) {
+        loadDirectory(m_selectedDirectoryId);
+    }
+}
+
+QVariantList KatalogueClient::directoryEntries() const {
+    return m_directoryEntries;
+}
+
+QVariantList KatalogueClient::fileEntries() const {
+    return m_fileEntries;
+}
+
 bool KatalogueClient::openProject(const QString &path) {
     if (!ensureInterface()) {
         return false;
@@ -65,6 +103,13 @@ void KatalogueClient::refreshVolumes() {
     const QVariantMap payload = reply.value();
     m_volumes = payload.value(QStringLiteral("items")).toList();
     emit volumesChanged();
+
+    if (m_selectedVolumeId < 0 && !m_volumes.isEmpty()) {
+        const QVariantMap first = m_volumes.first().toMap();
+        if (first.contains(QStringLiteral("id"))) {
+            setSelectedVolumeId(first.value(QStringLiteral("id")).toInt());
+        }
+    }
 }
 
 void KatalogueClient::searchByName(const QString &query, int limit, int offset) {
@@ -78,6 +123,44 @@ void KatalogueClient::searchByName(const QString &query, int limit, int offset) 
     const QVariantMap payload = reply.value();
     m_searchResults = payload.value(QStringLiteral("items")).toList();
     emit searchResultsChanged();
+}
+
+void KatalogueClient::loadRootForVolume(int volumeId) {
+    if (!ensureInterface()) {
+        return;
+    }
+    QDBusReply<QVariantList> reply = m_iface->call(QStringLiteral("ListDirectories"),
+                                                   volumeId,
+                                                   -1);
+    if (!reply.isValid()) {
+        return;
+    }
+    m_directoryEntries = reply.value();
+    emit directoryEntriesChanged();
+    if (!m_fileEntries.isEmpty()) {
+        m_fileEntries.clear();
+        emit fileEntriesChanged();
+    }
+}
+
+void KatalogueClient::loadDirectory(int directoryId) {
+    if (!ensureInterface()) {
+        return;
+    }
+    QDBusReply<QVariantList> dirReply = m_iface->call(QStringLiteral("ListDirectories"),
+                                                      m_selectedVolumeId,
+                                                      directoryId);
+    if (dirReply.isValid()) {
+        m_directoryEntries = dirReply.value();
+        emit directoryEntriesChanged();
+    }
+
+    QDBusReply<QVariantList> fileReply = m_iface->call(QStringLiteral("ListFiles"),
+                                                       directoryId);
+    if (fileReply.isValid()) {
+        m_fileEntries = fileReply.value();
+        emit fileEntriesChanged();
+    }
 }
 
 bool KatalogueClient::ensureInterface() {
