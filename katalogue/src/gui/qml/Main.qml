@@ -14,6 +14,7 @@ Kirigami.ApplicationWindow {
     Component.onCompleted: {
         KatalogueClient.refreshVolumes()
         KatalogueClient.refreshProjectInfo()
+        rebuildVolumeFilterModel()
     }
 
     pageStack.initialPage: Kirigami.Page {
@@ -42,9 +43,28 @@ Kirigami.ApplicationWindow {
 
                         Kirigami.ActionTextField {
                             id: searchField
-                            width: parent.width * 0.6
+                            width: parent.width * 0.4
                             placeholderText: "Search files"
-                            onAccepted: KatalogueClient.searchByName(text)
+                            onAccepted: performSearch()
+                        }
+
+                        ComboBox {
+                            id: volumeFilter
+                            width: parent.width * 0.2
+                            model: volumeFilterModel
+                            textRole: "label"
+                        }
+
+                        Kirigami.ActionTextField {
+                            id: fileTypeField
+                            width: parent.width * 0.15
+                            placeholderText: "Type (e.g. mp3)"
+                            onAccepted: performSearch()
+                        }
+
+                        Button {
+                            text: "Search"
+                            onClicked: performSearch()
                         }
 
                         Kirigami.ActionTextField {
@@ -132,6 +152,53 @@ Kirigami.ApplicationWindow {
                         }
                     }
 
+                    Kirigami.Card {
+                        visible: KatalogueClient.searchResults.length > 0
+                        width: parent.width
+
+                        contentItem: Column {
+                            spacing: Kirigami.Units.smallSpacing
+
+                            Kirigami.Heading {
+                                text: "Search Results"
+                                level: 3
+                            }
+
+                            ListView {
+                                width: parent.width
+                                height: Math.min(200, contentHeight)
+                                model: KatalogueClient.searchResults
+                                delegate: Item {
+                                    width: parent.width
+                                    height: Kirigami.Units.gridUnit * 2
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: 2
+                                        Label {
+                                            text: modelData["fileName"]
+                                            font.bold: true
+                                        }
+                                        Label {
+                                            text: modelData["volumeLabel"] + ": " + modelData["fullPath"]
+                                            color: "#888888"
+                                            elide: Text.ElideMiddle
+                                            width: parent.width
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            KatalogueClient.jumpToResult(modelData["volumeId"],
+                                                                         modelData["directoryId"])
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     DirectoryTree {
                         height: parent.height * 0.4
                         width: parent.width
@@ -169,5 +236,39 @@ Kirigami.ApplicationWindow {
                 KatalogueClient.openProject(path)
             }
         }
+    }
+
+    ListModel {
+        id: volumeFilterModel
+    }
+
+    Connections {
+        target: KatalogueClient
+        function onVolumesChanged() {
+            rebuildVolumeFilterModel()
+        }
+    }
+
+    function rebuildVolumeFilterModel() {
+        volumeFilterModel.clear()
+        volumeFilterModel.append({"label": "All volumes", "id": -1})
+        for (let i = 0; i < KatalogueClient.volumes.length; i += 1) {
+            const entry = KatalogueClient.volumes[i]
+            volumeFilterModel.append({
+                "label": entry["label"] || "Unnamed volume",
+                "id": entry["id"]
+            })
+        }
+    }
+
+    function performSearch() {
+        const query = searchField.text
+        const fileType = fileTypeField.text.trim()
+        let volumeId = -1
+        if (volumeFilter.currentIndex >= 0) {
+            const entry = volumeFilterModel.get(volumeFilter.currentIndex)
+            volumeId = entry.id
+        }
+        KatalogueClient.search(query, volumeId, fileType)
     }
 }

@@ -37,10 +37,13 @@ struct FileInfo {
 };
 
 struct SearchResult {
-    int fileId;
+    int fileId = -1;
+    int directoryId = -1;
+    int volumeId = -1;
     QString fileName;
     QString fullPath;
     QString volumeLabel;
-    qint64 size;
+    QString fileType;
+    qint64 size = 0;
     QDateTime mtime;
 };

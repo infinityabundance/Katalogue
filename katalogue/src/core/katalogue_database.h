@@ -32,6 +32,16 @@ public:
     QList<FileInfo> listFilesInDirectory(int directoryId) const;
     std::optional<DirectoryInfo> getDirectory(int directoryId) const;
 
+    struct SearchFilters {
+        std::optional<int> volumeId;
+        std::optional<QString> fileType;
+    };
+
+    QList<SearchResult> search(const QString &queryText,
+                               const SearchFilters &filters,
+                               int limit,
+                               int offset) const;
+
     QList<SearchResult> searchByName(const QString &query,
                                      int limit = 100,
                                      int offset = 0) const;

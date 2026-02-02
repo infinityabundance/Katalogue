@@ -164,16 +164,37 @@ void KatalogueClient::refreshVolumes() {
 }
 
 void KatalogueClient::searchByName(const QString &query, int limit, int offset) {
+    search(query, -1, QString(), limit, offset);
+}
+
+void KatalogueClient::search(const QString &query,
+                             int volumeId,
+                             const QString &fileType,
+                             int limit,
+                             int offset) {
     if (!ensureInterface()) {
         return;
     }
-    QDBusReply<QVariantMap> reply = m_iface->call(QStringLiteral("SearchByName"), query, limit, offset);
+    QDBusReply<QVariantList> reply = m_iface->call(QStringLiteral("Search"),
+                                                   query,
+                                                   volumeId,
+                                                   fileType,
+                                                   limit,
+                                                   offset);
     if (!reply.isValid()) {
         return;
     }
-    const QVariantMap payload = reply.value();
-    m_searchResults = payload.value(QStringLiteral("items")).toList();
+    m_searchResults = reply.value();
     emit searchResultsChanged();
+}
+
+void KatalogueClient::jumpToResult(int volumeId, int directoryId) {
+    if (volumeId >= 0) {
+        setSelectedVolumeId(volumeId);
+    }
+    if (directoryId >= 0) {
+        setSelectedDirectoryId(directoryId);
+    }
 }
 
 void KatalogueClient::refreshProjectInfo() {

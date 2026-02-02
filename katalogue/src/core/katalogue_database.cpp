@@ -516,6 +516,87 @@ std::optional<KatalogueDatabase::ProjectStats> KatalogueDatabase::projectStats()
     return stats;
 }
 
+QList<SearchResult> KatalogueDatabase::search(const QString &queryText,
+                                              const SearchFilters &filters,
+                                              int limit,
+                                              int offset) const {
+    QList<SearchResult> results;
+    if (!m_db.isOpen()) {
+        return results;
+    }
+
+    const QString trimmed = queryText.trimmed();
+    if (trimmed.isEmpty()) {
+        return results;
+    }
+
+    QString statement =
+        "SELECT files.id, files.directory_id, directories.volume_id, files.name, "
+        "directories.full_path || '/' || files.name AS full_path, "
+        "volumes.label, files.file_type, files.size, files.mtime "
+        "FROM file_fts "
+        "JOIN files ON files.id = file_fts.rowid "
+        "JOIN directories ON directories.id = files.directory_id "
+        "JOIN volumes ON volumes.id = directories.volume_id "
+        "WHERE file_fts MATCH ? ";
+
+    if (filters.volumeId.has_value()) {
+        statement += "AND directories.volume_id = ? ";
+    }
+
+    bool hasFileTypeFilter = false;
+    QString fileTypeValue;
+    if (filters.fileType.has_value()) {
+        fileTypeValue = filters.fileType->trimmed().toLower();
+        if (!fileTypeValue.isEmpty()) {
+            hasFileTypeFilter = true;
+            statement += "AND files.file_type LIKE ? ";
+        }
+    }
+
+    statement += "ORDER BY files.mtime DESC LIMIT ? OFFSET ?";
+
+    QSqlQuery query(m_db);
+    query.prepare(statement);
+    const QString matchQuery = trimmed + '*';
+    query.addBindValue(matchQuery);
+
+    if (filters.volumeId.has_value()) {
+        query.addBindValue(filters.volumeId.value());
+    }
+
+    if (hasFileTypeFilter) {
+        const QString pattern = fileTypeValue.contains('/')
+                                    ? fileTypeValue
+                                    : QStringLiteral("%/") + fileTypeValue;
+        query.addBindValue(pattern);
+    }
+
+    query.addBindValue(limit);
+    query.addBindValue(offset);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to search" << query.lastError();
+        return results;
+    }
+
+    while (query.next()) {
+        SearchResult result;
+        result.fileId = query.value(0).toInt();
+        result.directoryId = query.value(1).toInt();
+        result.volumeId = query.value(2).toInt();
+        result.fileName = query.value(3).toString();
+        result.fullPath = query.value(4).toString();
+        result.volumeLabel = query.value(5).toString();
+        result.fileType = query.value(6).toString();
+        result.size = query.value(7).toLongLong();
+        result.mtime = QDateTime::fromSecsSinceEpoch(query.value(8).toLongLong(), Qt::UTC);
+        results.append(result);
+    }
+
+    return results;
+}
+
 QList<DirectoryInfo> KatalogueDatabase::listDirectories(int volumeId, int parentId) const {
     QList<DirectoryInfo> directories;
     if (!m_db.isOpen()) {
@@ -618,42 +699,8 @@ std::optional<DirectoryInfo> KatalogueDatabase::getDirectory(int directoryId) co
 }
 
 QList<SearchResult> KatalogueDatabase::searchByName(const QString &queryText, int limit, int offset) const {
-    QList<SearchResult> results;
-    if (!m_db.isOpen()) {
-        return results;
-    }
-
-    QSqlQuery query(m_db);
-    query.prepare("SELECT files.id, files.name, directories.full_path || '/' || files.name AS full_path, "
-                  "volumes.label, files.size, files.mtime "
-                  "FROM file_fts "
-                  "JOIN files ON files.id = file_fts.rowid "
-                  "JOIN directories ON directories.id = files.directory_id "
-                  "JOIN volumes ON volumes.id = directories.volume_id "
-                  "WHERE file_fts MATCH ? "
-                  "LIMIT ? OFFSET ?");
-    const QString matchQuery = queryText + '*';
-    query.addBindValue(matchQuery);
-    query.addBindValue(limit);
-    query.addBindValue(offset);
-
-    if (!query.exec()) {
-        qWarning() << "Failed to search" << query.lastError();
-        return results;
-    }
-
-    while (query.next()) {
-        SearchResult result;
-        result.fileId = query.value(0).toInt();
-        result.fileName = query.value(1).toString();
-        result.fullPath = query.value(2).toString();
-        result.volumeLabel = query.value(3).toString();
-        result.size = query.value(4).toLongLong();
-        result.mtime = QDateTime::fromSecsSinceEpoch(query.value(5).toLongLong(), Qt::UTC);
-        results.append(result);
-    }
-
-    return results;
+    SearchFilters filters;
+    return search(queryText, filters, limit, offset);
 }
 
 QString KatalogueDatabase::directoryFullPath(int directoryId) const {
