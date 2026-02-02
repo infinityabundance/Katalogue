@@ -35,6 +35,8 @@ public:
               ProgressCallback progress = {});
 
     void cancel();
+    void requestCancel();
+    bool isCancelRequested() const;
 
 private:
     bool isExcluded(const QString &relativePath,
@@ -43,4 +45,5 @@ private:
     bool withinDepth(const QString &relativePath, int maxDepth) const;
 
     std::atomic_bool m_cancelled{false};
+    std::atomic_bool m_cancelRequested{false};
 };

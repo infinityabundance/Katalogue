@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QThread>
+#include <QDBusContext>
 
 #include "katalogue_database.h"
 #include "katalogue_scanner.h"
@@ -24,13 +25,15 @@ struct ScanJob {
     VolumeInfo volumeInfo;
     ScanOptions options;
     bool existingVolume = false;
+    QString errorString;
 };
 
-class KatalogueDaemon : public QObject {
+class KatalogueDaemon : public QObject, protected QDBusContext {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.kde.Katalogue1")
 public:
     explicit KatalogueDaemon(QObject *parent = nullptr);
+    bool init();
 
 public slots:
     QString Ping() const;
