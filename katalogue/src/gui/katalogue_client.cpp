@@ -197,6 +197,43 @@ void KatalogueClient::jumpToResult(int volumeId, int directoryId) {
     }
 }
 
+QString KatalogueClient::getFileNote(int fileId) {
+    if (!ensureInterface()) {
+        return {};
+    }
+    QDBusReply<QString> reply = m_iface->call(QStringLiteral("GetFileNote"), fileId);
+    return reply.isValid() ? reply.value() : QString();
+}
+
+void KatalogueClient::setFileNote(int fileId, const QString &content) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("SetFileNote"), fileId, content);
+}
+
+QVariantList KatalogueClient::getFileTags(int fileId) {
+    if (!ensureInterface()) {
+        return {};
+    }
+    QDBusReply<QVariantList> reply = m_iface->call(QStringLiteral("GetFileTags"), fileId);
+    return reply.isValid() ? reply.value() : QVariantList{};
+}
+
+void KatalogueClient::addFileTag(int fileId, const QString &key, const QString &value) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("AddFileTag"), fileId, key, value);
+}
+
+void KatalogueClient::removeFileTag(int fileId, const QString &key, const QString &value) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("RemoveFileTag"), fileId, key, value);
+}
+
 void KatalogueClient::refreshProjectInfo() {
     if (!ensureInterface()) {
         return;

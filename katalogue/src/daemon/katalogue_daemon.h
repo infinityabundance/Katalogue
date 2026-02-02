@@ -44,6 +44,11 @@ public slots:
     QList<QVariantMap> ListFiles(int directoryId) const;
     QVariantMap SearchByName(const QString &query, int limit, int offset) const;
     QList<QVariantMap> Search(const QString &query, int volumeId, const QString &fileType, int limit, int offset) const;
+    QString GetFileNote(int fileId) const;
+    void SetFileNote(int fileId, const QString &content);
+    QList<QVariantMap> GetFileTags(int fileId) const;
+    void AddFileTag(int fileId, const QString &key, const QString &value);
+    void RemoveFileTag(int fileId, const QString &key, const QString &value);
 
 signals:
     void ScanProgress(uint scanId, const QString &path, int directories, int files, qint64 bytes);

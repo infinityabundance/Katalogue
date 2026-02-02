@@ -1,6 +1,7 @@
 #include "katalogue_database.h"
 
 #include <QDateTime>
+#include <QDir>
 #include <QList>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -189,6 +190,47 @@ bool KatalogueDatabase::initializeSchema() {
             return false;
         }
         version = 1;
+    }
+
+    if (version == 1) {
+        const QList<QString> schemaStatements = {
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS notes ("
+                "id INTEGER PRIMARY KEY,"
+                "target_type TEXT NOT NULL,"
+                "target_id INTEGER NOT NULL,"
+                "content TEXT NOT NULL"
+                ");"),
+            QStringLiteral(
+                "CREATE INDEX IF NOT EXISTS notes_target_idx "
+                "ON notes(target_type, target_id);"),
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS tags ("
+                "id INTEGER PRIMARY KEY,"
+                "key TEXT NOT NULL,"
+                "value TEXT"
+                ");"),
+            QStringLiteral(
+                "CREATE UNIQUE INDEX IF NOT EXISTS tags_unique_idx "
+                "ON tags(key, value);"),
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS file_tags ("
+                "file_id INTEGER NOT NULL REFERENCES files(id) ON DELETE CASCADE,"
+                "tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,"
+                "PRIMARY KEY(file_id, tag_id)"
+                ");")
+        };
+
+        if (!execStatements(m_db, schemaStatements)) {
+            m_db.rollback();
+            return false;
+        }
+
+        if (!setSchemaVersion(m_db, 2)) {
+            m_db.rollback();
+            return false;
+        }
+        version = 2;
     }
 
     if (!m_db.commit()) {
@@ -641,6 +683,8 @@ QList<FileInfo> KatalogueDatabase::listFilesInDirectory(int directoryId) const {
         return files;
     }
 
+    const QString basePath = directoryFullPath(directoryId);
+
     QSqlQuery query(m_db);
     query.prepare("SELECT id, directory_id, name, size, mtime, ctime, file_type, hash, attrs "
                   "FROM files WHERE directory_id = ? "
@@ -657,6 +701,9 @@ QList<FileInfo> KatalogueDatabase::listFilesInDirectory(int directoryId) const {
         info.id = query.value(0).toInt();
         info.directoryId = query.value(1).toInt();
         info.name = query.value(2).toString();
+        info.fullPath = basePath.isEmpty()
+                            ? info.name
+                            : QDir::cleanPath(basePath + '/' + info.name);
         info.size = query.value(3).toLongLong();
         if (!query.value(4).isNull()) {
             info.mtime = QDateTime::fromSecsSinceEpoch(query.value(4).toLongLong(), Qt::UTC);
@@ -698,9 +745,264 @@ std::optional<DirectoryInfo> KatalogueDatabase::getDirectory(int directoryId) co
     return info;
 }
 
+std::optional<QString> KatalogueDatabase::getVolumeLabel(int volumeId) const {
+    if (!m_db.isOpen() || volumeId < 0) {
+        return std::nullopt;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT label FROM volumes WHERE id = ?");
+    query.addBindValue(volumeId);
+    if (!query.exec()) {
+        qWarning() << "Failed to fetch volume label" << query.lastError();
+        return std::nullopt;
+    }
+    if (!query.next()) {
+        return std::nullopt;
+    }
+    return query.value(0).toString();
+}
+
 QList<SearchResult> KatalogueDatabase::searchByName(const QString &queryText, int limit, int offset) const {
     SearchFilters filters;
     return search(queryText, filters, limit, offset);
+}
+
+std::optional<QString> KatalogueDatabase::getNoteForFile(int fileId) const {
+    if (!m_db.isOpen() || fileId < 0) {
+        return std::nullopt;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT content FROM notes WHERE target_type = ? AND target_id = ?");
+    query.addBindValue(QStringLiteral("file"));
+    query.addBindValue(fileId);
+    if (!query.exec()) {
+        qWarning() << "Failed to fetch file note" << query.lastError();
+        return std::nullopt;
+    }
+    if (query.next()) {
+        return query.value(0).toString();
+    }
+    return std::nullopt;
+}
+
+std::optional<QString> KatalogueDatabase::getNoteForDirectory(int directoryId) const {
+    if (!m_db.isOpen() || directoryId < 0) {
+        return std::nullopt;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT content FROM notes WHERE target_type = ? AND target_id = ?");
+    query.addBindValue(QStringLiteral("directory"));
+    query.addBindValue(directoryId);
+    if (!query.exec()) {
+        qWarning() << "Failed to fetch directory note" << query.lastError();
+        return std::nullopt;
+    }
+    if (query.next()) {
+        return query.value(0).toString();
+    }
+    return std::nullopt;
+}
+
+bool KatalogueDatabase::setNoteForFile(int fileId, const QString &content) {
+    if (!m_db.isOpen() || fileId < 0) {
+        return false;
+    }
+    const QString trimmed = content.trimmed();
+    QSqlQuery query(m_db);
+    if (trimmed.isEmpty()) {
+        query.prepare("DELETE FROM notes WHERE target_type = ? AND target_id = ?");
+        query.addBindValue(QStringLiteral("file"));
+        query.addBindValue(fileId);
+        if (!query.exec()) {
+            qWarning() << "Failed to delete file note" << query.lastError();
+            return false;
+        }
+        return true;
+    }
+
+    query.prepare("SELECT id FROM notes WHERE target_type = ? AND target_id = ?");
+    query.addBindValue(QStringLiteral("file"));
+    query.addBindValue(fileId);
+    if (!query.exec()) {
+        qWarning() << "Failed to query file note" << query.lastError();
+        return false;
+    }
+    if (query.next()) {
+        const int noteId = query.value(0).toInt();
+        QSqlQuery update(m_db);
+        update.prepare("UPDATE notes SET content = ? WHERE id = ?");
+        update.addBindValue(trimmed);
+        update.addBindValue(noteId);
+        if (!update.exec()) {
+            qWarning() << "Failed to update file note" << update.lastError();
+            return false;
+        }
+        return true;
+    }
+
+    QSqlQuery insert(m_db);
+    insert.prepare("INSERT INTO notes (target_type, target_id, content) VALUES (?, ?, ?)");
+    insert.addBindValue(QStringLiteral("file"));
+    insert.addBindValue(fileId);
+    insert.addBindValue(trimmed);
+    if (!insert.exec()) {
+        qWarning() << "Failed to insert file note" << insert.lastError();
+        return false;
+    }
+    return true;
+}
+
+bool KatalogueDatabase::setNoteForDirectory(int directoryId, const QString &content) {
+    if (!m_db.isOpen() || directoryId < 0) {
+        return false;
+    }
+    const QString trimmed = content.trimmed();
+    QSqlQuery query(m_db);
+    if (trimmed.isEmpty()) {
+        query.prepare("DELETE FROM notes WHERE target_type = ? AND target_id = ?");
+        query.addBindValue(QStringLiteral("directory"));
+        query.addBindValue(directoryId);
+        if (!query.exec()) {
+            qWarning() << "Failed to delete directory note" << query.lastError();
+            return false;
+        }
+        return true;
+    }
+
+    query.prepare("SELECT id FROM notes WHERE target_type = ? AND target_id = ?");
+    query.addBindValue(QStringLiteral("directory"));
+    query.addBindValue(directoryId);
+    if (!query.exec()) {
+        qWarning() << "Failed to query directory note" << query.lastError();
+        return false;
+    }
+    if (query.next()) {
+        const int noteId = query.value(0).toInt();
+        QSqlQuery update(m_db);
+        update.prepare("UPDATE notes SET content = ? WHERE id = ?");
+        update.addBindValue(trimmed);
+        update.addBindValue(noteId);
+        if (!update.exec()) {
+            qWarning() << "Failed to update directory note" << update.lastError();
+            return false;
+        }
+        return true;
+    }
+
+    QSqlQuery insert(m_db);
+    insert.prepare("INSERT INTO notes (target_type, target_id, content) VALUES (?, ?, ?)");
+    insert.addBindValue(QStringLiteral("directory"));
+    insert.addBindValue(directoryId);
+    insert.addBindValue(trimmed);
+    if (!insert.exec()) {
+        qWarning() << "Failed to insert directory note" << insert.lastError();
+        return false;
+    }
+    return true;
+}
+
+bool KatalogueDatabase::addTagToFile(int fileId, const QString &key, const QString &value) {
+    if (!m_db.isOpen() || fileId < 0) {
+        return false;
+    }
+    const QString trimmedKey = key.trimmed();
+    if (trimmedKey.isEmpty()) {
+        return false;
+    }
+    const QString trimmedValue = value.trimmed();
+
+    int tagId = -1;
+    QSqlQuery findTag(m_db);
+    findTag.prepare("SELECT id FROM tags WHERE key = ? AND value = ?");
+    findTag.addBindValue(trimmedKey);
+    findTag.addBindValue(trimmedValue);
+    if (!findTag.exec()) {
+        qWarning() << "Failed to lookup tag" << findTag.lastError();
+        return false;
+    }
+    if (findTag.next()) {
+        tagId = findTag.value(0).toInt();
+    } else {
+        QSqlQuery insertTag(m_db);
+        insertTag.prepare("INSERT INTO tags (key, value) VALUES (?, ?)");
+        insertTag.addBindValue(trimmedKey);
+        insertTag.addBindValue(trimmedValue);
+        if (!insertTag.exec()) {
+            qWarning() << "Failed to insert tag" << insertTag.lastError();
+            return false;
+        }
+        tagId = insertTag.lastInsertId().toInt();
+    }
+
+    QSqlQuery link(m_db);
+    link.prepare("INSERT OR IGNORE INTO file_tags (file_id, tag_id) VALUES (?, ?)");
+    link.addBindValue(fileId);
+    link.addBindValue(tagId);
+    if (!link.exec()) {
+        qWarning() << "Failed to link tag to file" << link.lastError();
+        return false;
+    }
+    return true;
+}
+
+bool KatalogueDatabase::removeTagFromFile(int fileId, const QString &key, const QString &value) {
+    if (!m_db.isOpen() || fileId < 0) {
+        return false;
+    }
+    const QString trimmedKey = key.trimmed();
+    if (trimmedKey.isEmpty()) {
+        return false;
+    }
+    const QString trimmedValue = value.trimmed();
+
+    QSqlQuery findTag(m_db);
+    findTag.prepare("SELECT id FROM tags WHERE key = ? AND value = ?");
+    findTag.addBindValue(trimmedKey);
+    findTag.addBindValue(trimmedValue);
+    if (!findTag.exec()) {
+        qWarning() << "Failed to lookup tag for removal" << findTag.lastError();
+        return false;
+    }
+    if (!findTag.next()) {
+        return true;
+    }
+    const int tagId = findTag.value(0).toInt();
+
+    QSqlQuery unlink(m_db);
+    unlink.prepare("DELETE FROM file_tags WHERE file_id = ? AND tag_id = ?");
+    unlink.addBindValue(fileId);
+    unlink.addBindValue(tagId);
+    if (!unlink.exec()) {
+        qWarning() << "Failed to unlink tag from file" << unlink.lastError();
+        return false;
+    }
+    return true;
+}
+
+QList<QPair<QString, QString>> KatalogueDatabase::tagsForFile(int fileId) const {
+    QList<QPair<QString, QString>> tags;
+    if (!m_db.isOpen() || fileId < 0) {
+        return tags;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT tags.key, tags.value "
+                  "FROM tags "
+                  "JOIN file_tags ON file_tags.tag_id = tags.id "
+                  "WHERE file_tags.file_id = ? "
+                  "ORDER BY tags.key, tags.value");
+    query.addBindValue(fileId);
+    if (!query.exec()) {
+        qWarning() << "Failed to list tags for file" << query.lastError();
+        return tags;
+    }
+    while (query.next()) {
+        tags.append(qMakePair(query.value(0).toString(), query.value(1).toString()));
+    }
+    return tags;
 }
 
 QString KatalogueDatabase::directoryFullPath(int directoryId) const {
