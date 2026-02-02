@@ -42,6 +42,8 @@ target_link_libraries(katalogued
 
 qt_add_executable(katalogue-gui
     src/gui/main.cpp
+    src/gui/katalogue_client.cpp
+    src/gui/katalogue_client.h
 )
 
 target_include_directories(katalogue-gui PRIVATE
@@ -51,6 +53,7 @@ target_include_directories(katalogue-gui PRIVATE
 target_link_libraries(katalogue-gui
     katalogue-core
     Qt6::Core
+    Qt6::DBus
     Qt6::Quick
     Qt6::Qml
 )

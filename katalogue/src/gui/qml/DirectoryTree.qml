@@ -17,7 +17,7 @@ Kirigami.Card {
         ListView {
             width: parent.width
             height: 200
-            model: ["/", "/docs", "/photos"]
+            model: []
             delegate: Label {
                 text: modelData
             }

@@ -15,9 +15,9 @@ Kirigami.Card {
         }
 
         Repeater {
-            model: ["Archive A", "Backup B", "Media C"]
+            model: KatalogueClient.volumes
             delegate: Label {
-                text: modelData
+                text: modelData["label"] || "Unnamed volume"
             }
         }
     }
