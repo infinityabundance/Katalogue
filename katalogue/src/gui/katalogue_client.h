@@ -8,6 +8,7 @@
 #include <QVariantMap>
 
 #include "katalogue_settings.h"
+#include "katalogue_version.h"
 
 class QDBusInterface;
 
@@ -32,6 +33,7 @@ class KatalogueClient : public QObject {
     Q_PROPERTY(int scannerMaxDepth READ scannerMaxDepth WRITE setScannerMaxDepth NOTIFY settingsChanged)
     Q_PROPERTY(QString scannerExcludePatternsString READ scannerExcludePatternsString WRITE setScannerExcludePatternsString NOTIFY settingsChanged)
     Q_PROPERTY(bool uiConfirmVirtualFolderDelete READ uiConfirmVirtualFolderDelete WRITE setUiConfirmVirtualFolderDelete NOTIFY settingsChanged)
+    Q_PROPERTY(QString appVersion READ appVersion CONSTANT)
 
 public:
     explicit KatalogueClient(QObject *parent = nullptr);
@@ -65,6 +67,7 @@ public:
     void setScannerExcludePatternsString(const QString &patterns);
     bool uiConfirmVirtualFolderDelete() const;
     void setUiConfirmVirtualFolderDelete(bool value);
+    QString appVersion() const;
 
     Q_INVOKABLE void openProject(const QString &path);
     Q_INVOKABLE int startScan(const QString &rootPath);

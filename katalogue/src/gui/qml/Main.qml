@@ -84,6 +84,11 @@ Kirigami.ApplicationWindow {
                             text: qsTr("Preferences")
                             onClicked: root.pageStack.push(Qt.resolvedUrl("PreferencesPage.qml"))
                         }
+
+                        Button {
+                            text: qsTr("About Katalogue")
+                            onClicked: root.pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+                        }
                     }
 
                     Row {

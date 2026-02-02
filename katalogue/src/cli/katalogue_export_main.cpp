@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "katalogue_database.h"
+#include "katalogue_version.h"
 
 namespace {
 struct Options {
@@ -57,6 +58,11 @@ int main(int argc, char **argv) {
         const QString arg = args.at(i);
         if (arg == QStringLiteral("--help") || arg == QStringLiteral("-h")) {
             printUsage(err);
+            return 0;
+        }
+        if (arg == QStringLiteral("--version")) {
+            QTextStream out(stdout);
+            out << "Katalogue export tool " << KATALOGUE_VERSION_STRING << Qt::endl;
             return 0;
         }
         if (arg == QStringLiteral("--list-volumes")) {

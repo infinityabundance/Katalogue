@@ -181,6 +181,10 @@ void KatalogueClient::setUiConfirmVirtualFolderDelete(bool value) {
     emit settingsChanged();
 }
 
+QString KatalogueClient::appVersion() const {
+    return QString::fromLatin1(KATALOGUE_VERSION_STRING);
+}
+
 void KatalogueClient::openProject(const QString &path) {
     if (!ensureInterface()) {
         return;

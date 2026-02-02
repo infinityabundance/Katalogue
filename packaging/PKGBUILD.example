@@ -1,0 +1,29 @@
+# Maintainer: Riaan de Beer
+pkgname=katalogue-git
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Modern Qt6/KDE disk catalog application"
+arch=('x86_64')
+url="https://github.com/infinityabundance/Katalogue"
+license=('Apache')
+depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'qt6-tools' 'systemd' 'dbus')
+makedepends=('cmake' 'ninja' 'git')
+source=("$pkgname::git+https://github.com/infinityabundance/Katalogue.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$pkgname"
+  git describe --tags --always | sed 's/^v//;s/-/./g'
+}
+
+build() {
+  cd "$srcdir/$pkgname"
+  cmake -S katalogue -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release
+  cmake --build build
+}
+
+package() {
+  cd "$srcdir/$pkgname"
+  DESTDIR="$pkgdir" cmake --install build
+}

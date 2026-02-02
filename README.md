@@ -61,3 +61,7 @@ To enable the daemon for your user:
 ```bash
 systemctl --user enable --now katalogued.service
 ```
+
+## License
+Katalogue is licensed under the Apache License 2.0.  
+See the `LICENSE` file for details.

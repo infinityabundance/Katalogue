@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(Katalogue LANGUAGES CXX)
+project(Katalogue VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,6 +24,12 @@ if (Qt6LinguistTools_FOUND)
         TS_FILES ${KATALOGUE_TRANSLATIONS}
     )
 endif()
+
+configure_file(
+    src/common/katalogue_version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/src/common/katalogue_version.h
+    @ONLY
+)
 
 add_library(katalogue-core
     src/core/katalogue_database.cpp
@@ -50,6 +56,7 @@ target_include_directories(katalogued PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/daemon
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_BINARY_DIR}/src/common
 )
 
 target_link_libraries(katalogued
@@ -62,6 +69,11 @@ add_executable(katalogue-export
     src/cli/katalogue_export_main.cpp
 )
 
+target_include_directories(katalogue-export PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common
+    ${CMAKE_CURRENT_BINARY_DIR}/src/common
+)
+
 target_link_libraries(katalogue-export
     katalogue-core
     Qt6::Core
@@ -71,6 +83,11 @@ target_link_libraries(katalogue-export
 if(ENABLE_VVV_IMPORT)
     add_executable(katalogue-import-vvv
         src/cli/katalogue_import_vvv_main.cpp
+    )
+
+    target_include_directories(katalogue-import-vvv PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/common
+        ${CMAKE_CURRENT_BINARY_DIR}/src/common
     )
 
     target_link_libraries(katalogue-import-vvv
@@ -91,6 +108,7 @@ qt_add_executable(katalogue-gui
 target_include_directories(katalogue-gui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_BINARY_DIR}/src/common
 )
 
 target_link_libraries(katalogue-gui
@@ -112,6 +130,7 @@ qt_add_qml_module(katalogue-gui
         src/gui/qml/FileDetailsDrawer.qml
         src/gui/qml/EmptyCatalogPlaceholder.qml
         src/gui/qml/PreferencesPage.qml
+        src/gui/qml/AboutPage.qml
         src/gui/qml/VirtualFoldersSidebar.qml
         src/gui/qml/VirtualFolderItemsView.qml
 )
