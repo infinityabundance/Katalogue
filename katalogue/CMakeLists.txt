@@ -12,6 +12,8 @@ qt_standard_project_setup()
 
 enable_testing()
 
+option(ENABLE_VVV_IMPORT "Build optional VVV catalog import tool" OFF)
+
 add_library(katalogue-core
     src/core/katalogue_database.cpp
     src/core/katalogue_scanner.cpp
@@ -41,6 +43,28 @@ target_link_libraries(katalogued
     Qt6::Core
     Qt6::DBus
 )
+
+add_executable(katalogue-export
+    src/cli/katalogue_export_main.cpp
+)
+
+target_link_libraries(katalogue-export
+    katalogue-core
+    Qt6::Core
+    Qt6::Sql
+)
+
+if(ENABLE_VVV_IMPORT)
+    add_executable(katalogue-import-vvv
+        src/cli/katalogue_import_vvv_main.cpp
+    )
+
+    target_link_libraries(katalogue-import-vvv
+        katalogue-core
+        Qt6::Core
+        Qt6::Sql
+    )
+endif()
 
 qt_add_executable(katalogue-gui
     src/gui/main.cpp
@@ -83,3 +107,33 @@ target_link_libraries(core_test
 )
 
 add_test(NAME core_test COMMAND core_test)
+
+install(TARGETS katalogue-gui katalogued katalogue-export
+        RUNTIME DESTINATION bin)
+
+if(ENABLE_VVV_IMPORT)
+    install(TARGETS katalogue-import-vvv
+            RUNTIME DESTINATION bin)
+endif()
+
+install(FILES data/org.kde.katalogue.desktop
+        DESTINATION share/applications)
+
+install(FILES data/org.kde.katalogue.metainfo.xml
+        DESTINATION share/metainfo)
+
+install(FILES src/daemon/org.kde.Katalogue1.xml
+        DESTINATION share/dbus-1/interfaces)
+
+install(FILES systemd/katalogued.service
+        DESTINATION lib/systemd/user)
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/data/icons/hicolor/48x48/apps/org.kde.katalogue.png")
+    install(FILES data/icons/hicolor/48x48/apps/org.kde.katalogue.png
+            DESTINATION share/icons/hicolor/48x48/apps)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/data/icons/hicolor/scalable/apps/org.kde.katalogue.svg")
+    install(FILES data/icons/hicolor/scalable/apps/org.kde.katalogue.svg
+            DESTINATION share/icons/hicolor/scalable/apps)
+endif()
