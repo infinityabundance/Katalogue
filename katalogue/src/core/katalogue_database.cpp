@@ -479,6 +479,43 @@ QList<VolumeInfo> KatalogueDatabase::listVolumes() const {
     return volumes;
 }
 
+std::optional<KatalogueDatabase::ProjectStats> KatalogueDatabase::projectStats() const {
+    if (!m_db.isOpen()) {
+        return std::nullopt;
+    }
+
+    ProjectStats stats;
+
+    QSqlQuery volumesQuery(m_db);
+    if (!volumesQuery.exec("SELECT COUNT(*) FROM volumes")) {
+        qWarning() << "Failed to count volumes" << volumesQuery.lastError();
+        return std::nullopt;
+    }
+    if (volumesQuery.next()) {
+        stats.volumeCount = volumesQuery.value(0).toInt();
+    }
+
+    QSqlQuery filesQuery(m_db);
+    if (!filesQuery.exec("SELECT COUNT(*) FROM files")) {
+        qWarning() << "Failed to count files" << filesQuery.lastError();
+        return std::nullopt;
+    }
+    if (filesQuery.next()) {
+        stats.fileCount = filesQuery.value(0).toLongLong();
+    }
+
+    QSqlQuery bytesQuery(m_db);
+    if (!bytesQuery.exec("SELECT COALESCE(SUM(size), 0) FROM files")) {
+        qWarning() << "Failed to sum file sizes" << bytesQuery.lastError();
+        return std::nullopt;
+    }
+    if (bytesQuery.next()) {
+        stats.totalBytes = bytesQuery.value(0).toLongLong();
+    }
+
+    return stats;
+}
+
 QList<DirectoryInfo> KatalogueDatabase::listDirectories(int volumeId, int parentId) const {
     QList<DirectoryInfo> directories;
     if (!m_db.isOpen()) {

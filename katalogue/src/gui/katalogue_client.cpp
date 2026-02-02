@@ -64,12 +64,36 @@ QVariantList KatalogueClient::activeScans() const {
     return m_activeScans;
 }
 
-bool KatalogueClient::openProject(const QString &path) {
+QString KatalogueClient::projectPath() const {
+    return m_projectPath;
+}
+
+QVariantMap KatalogueClient::projectInfo() const {
+    return m_projectInfo;
+}
+
+void KatalogueClient::openProject(const QString &path) {
     if (!ensureInterface()) {
-        return false;
+        return;
     }
-    QDBusReply<bool> reply = m_iface->call(QStringLiteral("OpenProject"), path);
-    return reply.isValid() && reply.value();
+    QDBusReply<QVariantMap> reply = m_iface->call(QStringLiteral("OpenProject"), path);
+    if (!reply.isValid()) {
+        return;
+    }
+    m_projectInfo = reply.value();
+    m_projectPath = m_projectInfo.value(QStringLiteral("path")).toString();
+    emit projectInfoChanged();
+    emit projectPathChanged();
+
+    if (m_projectInfo.value(QStringLiteral("ok")).toBool()) {
+        m_directoryEntries.clear();
+        m_fileEntries.clear();
+        m_searchResults.clear();
+        emit directoryEntriesChanged();
+        emit fileEntriesChanged();
+        emit searchResultsChanged();
+        refreshVolumes();
+    }
 }
 
 int KatalogueClient::startScan(const QString &rootPath) {
@@ -150,6 +174,20 @@ void KatalogueClient::searchByName(const QString &query, int limit, int offset) 
     const QVariantMap payload = reply.value();
     m_searchResults = payload.value(QStringLiteral("items")).toList();
     emit searchResultsChanged();
+}
+
+void KatalogueClient::refreshProjectInfo() {
+    if (!ensureInterface()) {
+        return;
+    }
+    QDBusReply<QVariantMap> reply = m_iface->call(QStringLiteral("GetProjectInfo"));
+    if (!reply.isValid()) {
+        return;
+    }
+    m_projectInfo = reply.value();
+    m_projectPath = m_projectInfo.value(QStringLiteral("path")).toString();
+    emit projectInfoChanged();
+    emit projectPathChanged();
 }
 
 void KatalogueClient::loadRootForVolume(int volumeId) {

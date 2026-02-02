@@ -18,6 +18,8 @@ class KatalogueClient : public QObject {
     Q_PROPERTY(QVariantList directoryEntries READ directoryEntries NOTIFY directoryEntriesChanged)
     Q_PROPERTY(QVariantList fileEntries READ fileEntries NOTIFY fileEntriesChanged)
     Q_PROPERTY(QVariantList activeScans READ activeScans NOTIFY activeScansChanged)
+    Q_PROPERTY(QString projectPath READ projectPath NOTIFY projectPathChanged)
+    Q_PROPERTY(QVariantMap projectInfo READ projectInfo NOTIFY projectInfoChanged)
 
 public:
     explicit KatalogueClient(QObject *parent = nullptr);
@@ -31,13 +33,16 @@ public:
     QVariantList directoryEntries() const;
     QVariantList fileEntries() const;
     QVariantList activeScans() const;
+    QString projectPath() const;
+    QVariantMap projectInfo() const;
 
-    Q_INVOKABLE bool openProject(const QString &path);
+    Q_INVOKABLE void openProject(const QString &path);
     Q_INVOKABLE int startScan(const QString &rootPath);
     Q_INVOKABLE void cancelScan(int scanId);
     Q_INVOKABLE QVariantMap scanStatus(int scanId) const;
     Q_INVOKABLE void refreshVolumes();
     Q_INVOKABLE void searchByName(const QString &query, int limit = 100, int offset = 0);
+    Q_INVOKABLE void refreshProjectInfo();
     Q_INVOKABLE void loadRootForVolume(int volumeId);
     Q_INVOKABLE void loadDirectory(int directoryId);
 
@@ -49,6 +54,8 @@ signals:
     void directoryEntriesChanged();
     void fileEntriesChanged();
     void activeScansChanged();
+    void projectPathChanged();
+    void projectInfoChanged();
     void scanProgress(uint scanId, const QString &path, int directories, int files, qint64 bytes);
     void scanFinished(uint scanId, const QString &status);
 
@@ -77,6 +84,8 @@ private slots:
     QVariantList m_searchResults;
     QVariantList m_directoryEntries;
     QVariantList m_fileEntries;
+    QString m_projectPath;
+    QVariantMap m_projectInfo;
     QHash<int, ScanInfo> m_scans;
     QVariantList m_activeScans;
     int m_selectedVolumeId = -1;

@@ -7,7 +7,10 @@
     </method>
     <method name="OpenProject">
       <arg direction="in" type="s" name="path"/>
-      <arg direction="out" type="b" name="ok"/>
+      <arg direction="out" type="a{sv}" name="info"/>
+    </method>
+    <method name="GetProjectInfo">
+      <arg direction="out" type="a{sv}" name="info"/>
     </method>
     <method name="StartScan">
       <arg direction="in" type="s" name="root_path"/>
