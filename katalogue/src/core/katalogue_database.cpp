@@ -233,6 +233,43 @@ bool KatalogueDatabase::initializeSchema() {
         version = 2;
     }
 
+    if (version == 2) {
+        const QList<QString> schemaStatements = {
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS virtual_folders ("
+                "id INTEGER PRIMARY KEY,"
+                "parent_id INTEGER REFERENCES virtual_folders(id) ON DELETE CASCADE,"
+                "name TEXT NOT NULL"
+                ");"),
+            QStringLiteral(
+                "CREATE TABLE IF NOT EXISTS virtual_folder_items ("
+                "folder_id INTEGER NOT NULL REFERENCES virtual_folders(id) ON DELETE CASCADE,"
+                "file_id INTEGER NOT NULL REFERENCES files(id) ON DELETE CASCADE,"
+                "PRIMARY KEY(folder_id, file_id)"
+                ");"),
+            QStringLiteral(
+                "CREATE INDEX IF NOT EXISTS virtual_folders_parent_idx "
+                "ON virtual_folders(parent_id);"),
+            QStringLiteral(
+                "CREATE INDEX IF NOT EXISTS virtual_folder_items_folder_idx "
+                "ON virtual_folder_items(folder_id);"),
+            QStringLiteral(
+                "CREATE INDEX IF NOT EXISTS virtual_folder_items_file_idx "
+                "ON virtual_folder_items(file_id);")
+        };
+
+        if (!execStatements(m_db, schemaStatements)) {
+            m_db.rollback();
+            return false;
+        }
+
+        if (!setSchemaVersion(m_db, 3)) {
+            m_db.rollback();
+            return false;
+        }
+        version = 3;
+    }
+
     if (!m_db.commit()) {
         qWarning() << "Failed to commit schema" << m_db.lastError();
         return false;
@@ -1003,6 +1040,184 @@ QList<QPair<QString, QString>> KatalogueDatabase::tagsForFile(int fileId) const 
         tags.append(qMakePair(query.value(0).toString(), query.value(1).toString()));
     }
     return tags;
+}
+
+int KatalogueDatabase::createVirtualFolder(const QString &name, int parentId) {
+    if (!m_db.isOpen()) {
+        return -1;
+    }
+    const QString trimmed = name.trimmed();
+    if (trimmed.isEmpty()) {
+        return -1;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("INSERT INTO virtual_folders (parent_id, name) VALUES (?, ?)");
+    if (parentId < 0) {
+        query.addBindValue(QVariant(QVariant::Int));
+    } else {
+        query.addBindValue(parentId);
+    }
+    query.addBindValue(trimmed);
+    if (!query.exec()) {
+        qWarning() << "Failed to create virtual folder" << query.lastError();
+        return -1;
+    }
+    return query.lastInsertId().toInt();
+}
+
+bool KatalogueDatabase::renameVirtualFolder(int folderId, const QString &newName) {
+    if (!m_db.isOpen() || folderId < 0) {
+        return false;
+    }
+    const QString trimmed = newName.trimmed();
+    if (trimmed.isEmpty()) {
+        return false;
+    }
+    QSqlQuery query(m_db);
+    query.prepare("UPDATE virtual_folders SET name = ? WHERE id = ?");
+    query.addBindValue(trimmed);
+    query.addBindValue(folderId);
+    if (!query.exec()) {
+        qWarning() << "Failed to rename virtual folder" << query.lastError();
+        return false;
+    }
+    return true;
+}
+
+bool KatalogueDatabase::deleteVirtualFolder(int folderId) {
+    if (!m_db.isOpen() || folderId < 0) {
+        return false;
+    }
+    QSqlQuery query(m_db);
+    query.prepare("DELETE FROM virtual_folders WHERE id = ?");
+    query.addBindValue(folderId);
+    if (!query.exec()) {
+        qWarning() << "Failed to delete virtual folder" << query.lastError();
+        return false;
+    }
+    return true;
+}
+
+QList<VirtualFolderInfo> KatalogueDatabase::listVirtualFolders(int parentId) const {
+    QList<VirtualFolderInfo> folders;
+    if (!m_db.isOpen()) {
+        return folders;
+    }
+
+    QSqlQuery query(m_db);
+    if (parentId < 0) {
+        query.prepare("SELECT id, parent_id, name FROM virtual_folders "
+                      "WHERE parent_id IS NULL OR parent_id = -1 "
+                      "ORDER BY name COLLATE NOCASE");
+    } else {
+        query.prepare("SELECT id, parent_id, name FROM virtual_folders "
+                      "WHERE parent_id = ? ORDER BY name COLLATE NOCASE");
+        query.addBindValue(parentId);
+    }
+
+    if (!query.exec()) {
+        qWarning() << "Failed to list virtual folders" << query.lastError();
+        return folders;
+    }
+    while (query.next()) {
+        VirtualFolderInfo info;
+        info.id = query.value(0).toInt();
+        info.parentId = query.value(1).isNull() ? -1 : query.value(1).toInt();
+        info.name = query.value(2).toString();
+        folders.append(info);
+    }
+    return folders;
+}
+
+std::optional<VirtualFolderInfo> KatalogueDatabase::getVirtualFolder(int folderId) const {
+    if (!m_db.isOpen() || folderId < 0) {
+        return std::nullopt;
+    }
+    QSqlQuery query(m_db);
+    query.prepare("SELECT id, parent_id, name FROM virtual_folders WHERE id = ?");
+    query.addBindValue(folderId);
+    if (!query.exec()) {
+        qWarning() << "Failed to get virtual folder" << query.lastError();
+        return std::nullopt;
+    }
+    if (!query.next()) {
+        return std::nullopt;
+    }
+    VirtualFolderInfo info;
+    info.id = query.value(0).toInt();
+    info.parentId = query.value(1).isNull() ? -1 : query.value(1).toInt();
+    info.name = query.value(2).toString();
+    return info;
+}
+
+bool KatalogueDatabase::addFileToVirtualFolder(int folderId, int fileId) {
+    if (!m_db.isOpen() || folderId < 0 || fileId < 0) {
+        return false;
+    }
+    QSqlQuery query(m_db);
+    query.prepare("INSERT OR IGNORE INTO virtual_folder_items (folder_id, file_id) VALUES (?, ?)");
+    query.addBindValue(folderId);
+    query.addBindValue(fileId);
+    if (!query.exec()) {
+        qWarning() << "Failed to add file to virtual folder" << query.lastError();
+        return false;
+    }
+    return true;
+}
+
+bool KatalogueDatabase::removeFileFromVirtualFolder(int folderId, int fileId) {
+    if (!m_db.isOpen() || folderId < 0 || fileId < 0) {
+        return false;
+    }
+    QSqlQuery query(m_db);
+    query.prepare("DELETE FROM virtual_folder_items WHERE folder_id = ? AND file_id = ?");
+    query.addBindValue(folderId);
+    query.addBindValue(fileId);
+    if (!query.exec()) {
+        qWarning() << "Failed to remove file from virtual folder" << query.lastError();
+        return false;
+    }
+    return true;
+}
+
+QList<SearchResult> KatalogueDatabase::listVirtualFolderItems(int folderId) const {
+    QList<SearchResult> results;
+    if (!m_db.isOpen() || folderId < 0) {
+        return results;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare(
+        "SELECT files.id, files.directory_id, directories.volume_id, files.name, "
+        "directories.full_path || '/' || files.name AS full_path, "
+        "volumes.label, files.file_type, files.size, files.mtime "
+        "FROM virtual_folder_items "
+        "JOIN files ON files.id = virtual_folder_items.file_id "
+        "JOIN directories ON directories.id = files.directory_id "
+        "JOIN volumes ON volumes.id = directories.volume_id "
+        "WHERE virtual_folder_items.folder_id = ? "
+        "ORDER BY volumes.label, directories.full_path, files.name");
+    query.addBindValue(folderId);
+    if (!query.exec()) {
+        qWarning() << "Failed to list virtual folder items" << query.lastError();
+        return results;
+    }
+
+    while (query.next()) {
+        SearchResult result;
+        result.fileId = query.value(0).toInt();
+        result.directoryId = query.value(1).toInt();
+        result.volumeId = query.value(2).toInt();
+        result.fileName = query.value(3).toString();
+        result.fullPath = query.value(4).toString();
+        result.volumeLabel = query.value(5).toString();
+        result.fileType = query.value(6).toString();
+        result.size = query.value(7).toLongLong();
+        result.mtime = QDateTime::fromSecsSinceEpoch(query.value(8).toLongLong(), Qt::UTC);
+        results.append(result);
+    }
+    return results;
 }
 
 QString KatalogueDatabase::directoryFullPath(int directoryId) const {

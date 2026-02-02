@@ -30,6 +30,15 @@ Kirigami.Card {
                     anchors.verticalCenter: parent.verticalCenter
                     Label { text: modelData["name"] }
                     Label { text: modelData["size"] + " B" }
+                    Button {
+                        text: "Add"
+                        enabled: KatalogueClient.selectedVirtualFolderId >= 0
+                        onClicked: {
+                            KatalogueClient.addFileToVirtualFolder(
+                                KatalogueClient.selectedVirtualFolderId,
+                                modelData["id"])
+                        }
+                    }
                 }
 
                 MouseArea {

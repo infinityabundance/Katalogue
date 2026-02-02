@@ -48,3 +48,14 @@ struct SearchResult {
     qint64 size = 0;
     QDateTime mtime;
 };
+
+struct VirtualFolderInfo {
+    int id = -1;
+    int parentId = -1;
+    QString name;
+};
+
+struct VirtualFolderItemInfo {
+    int folderId = -1;
+    int fileId = -1;
+};
