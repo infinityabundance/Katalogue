@@ -12,6 +12,7 @@ struct ScanOptions {
     int maxDepth = -1;
     bool followSymlinks = false;
     bool includeHidden = false;
+    bool computeHashes = false;
     QStringList excludePatterns;
 };
 

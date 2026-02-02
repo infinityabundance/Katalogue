@@ -31,10 +31,13 @@ target_link_libraries(katalogue-core
 add_executable(katalogued
     src/daemon/main.cpp
     src/daemon/katalogue_daemon.cpp
+    src/common/katalogue_settings.cpp
+    src/common/katalogue_settings.h
 )
 
 target_include_directories(katalogued PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/daemon
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core
 )
 
@@ -70,9 +73,12 @@ qt_add_executable(katalogue-gui
     src/gui/main.cpp
     src/gui/katalogue_client.cpp
     src/gui/katalogue_client.h
+    src/common/katalogue_settings.cpp
+    src/common/katalogue_settings.h
 )
 
 target_include_directories(katalogue-gui PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core
 )
 
@@ -94,6 +100,7 @@ qt_add_qml_module(katalogue-gui
         src/gui/qml/FileView.qml
         src/gui/qml/FileDetailsDrawer.qml
         src/gui/qml/EmptyCatalogPlaceholder.qml
+        src/gui/qml/PreferencesPage.qml
         src/gui/qml/VirtualFoldersSidebar.qml
         src/gui/qml/VirtualFolderItemsView.qml
 )

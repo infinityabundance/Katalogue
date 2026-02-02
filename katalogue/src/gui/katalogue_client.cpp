@@ -6,6 +6,7 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 #include <QVariantMap>
+#include <QRegularExpression>
 
 namespace {
 constexpr const char *kService = "org.kde.Katalogue1";
@@ -107,6 +108,77 @@ void KatalogueClient::setSelectedVirtualFolderId(int folderId) {
 
 QVariantList KatalogueClient::virtualFolderItems() const {
     return m_virtualFolderItems;
+}
+
+bool KatalogueClient::scannerIncludeHidden() const {
+    return m_settings.scannerIncludeHidden();
+}
+
+void KatalogueClient::setScannerIncludeHidden(bool value) {
+    if (m_settings.scannerIncludeHidden() == value) {
+        return;
+    }
+    m_settings.setScannerIncludeHidden(value);
+    emit settingsChanged();
+}
+
+bool KatalogueClient::scannerFollowSymlinks() const {
+    return m_settings.scannerFollowSymlinks();
+}
+
+void KatalogueClient::setScannerFollowSymlinks(bool value) {
+    if (m_settings.scannerFollowSymlinks() == value) {
+        return;
+    }
+    m_settings.setScannerFollowSymlinks(value);
+    emit settingsChanged();
+}
+
+bool KatalogueClient::scannerComputeHashes() const {
+    return m_settings.scannerComputeHashes();
+}
+
+void KatalogueClient::setScannerComputeHashes(bool value) {
+    if (m_settings.scannerComputeHashes() == value) {
+        return;
+    }
+    m_settings.setScannerComputeHashes(value);
+    emit settingsChanged();
+}
+
+int KatalogueClient::scannerMaxDepth() const {
+    return m_settings.scannerMaxDepth();
+}
+
+void KatalogueClient::setScannerMaxDepth(int depth) {
+    if (m_settings.scannerMaxDepth() == depth) {
+        return;
+    }
+    m_settings.setScannerMaxDepth(depth);
+    emit settingsChanged();
+}
+
+QString KatalogueClient::scannerExcludePatternsString() const {
+    return m_settings.scannerExcludePatterns().join(QStringLiteral("\n"));
+}
+
+void KatalogueClient::setScannerExcludePatternsString(const QString &patterns) {
+    const QStringList list = patterns.split(QRegularExpression(QStringLiteral("[\\r\\n]+")),
+                                            Qt::SkipEmptyParts);
+    m_settings.setScannerExcludePatterns(list);
+    emit settingsChanged();
+}
+
+bool KatalogueClient::uiConfirmVirtualFolderDelete() const {
+    return m_settings.uiConfirmVirtualFolderDelete();
+}
+
+void KatalogueClient::setUiConfirmVirtualFolderDelete(bool value) {
+    if (m_settings.uiConfirmVirtualFolderDelete() == value) {
+        return;
+    }
+    m_settings.setUiConfirmVirtualFolderDelete(value);
+    emit settingsChanged();
 }
 
 void KatalogueClient::openProject(const QString &path) {

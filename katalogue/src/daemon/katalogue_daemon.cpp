@@ -167,9 +167,11 @@ uint KatalogueDaemon::StartScan(const QString &rootPath) {
     job.rootPath = rootPath;
     job.status = ScanJob::Status::Pending;
     job.volumeInfo = info;
-    job.options.includeHidden = false;
-    job.options.followSymlinks = false;
-    job.options.maxDepth = -1;
+    job.options.includeHidden = m_settings.scannerIncludeHidden();
+    job.options.followSymlinks = m_settings.scannerFollowSymlinks();
+    job.options.computeHashes = m_settings.scannerComputeHashes();
+    job.options.maxDepth = m_settings.scannerMaxDepth();
+    job.options.excludePatterns = m_settings.scannerExcludePatterns();
     job.existingVolume = existingVolume;
     m_jobs.insert(job.id, job);
 
