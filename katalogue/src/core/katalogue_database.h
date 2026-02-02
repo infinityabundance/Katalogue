@@ -19,6 +19,9 @@ public:
     bool deleteFile(int fileId);
 
     QList<VolumeInfo> listVolumes() const;
+    QList<DirectoryInfo> listDirectories(int volumeId, int parentId) const;
+    QList<FileInfo> listFilesInDirectory(int directoryId) const;
+    std::optional<DirectoryInfo> getDirectory(int directoryId) const;
 
     QList<SearchResult> searchByName(const QString &query,
                                      int limit = 100,

@@ -27,6 +27,15 @@
     <method name="ListVolumes">
       <arg direction="out" type="a{sv}" name="volumes"/>
     </method>
+    <method name="ListDirectories">
+      <arg direction="in" type="i" name="volume_id"/>
+      <arg direction="in" type="i" name="parent_id"/>
+      <arg direction="out" type="aa{sv}" name="entries"/>
+    </method>
+    <method name="ListFiles">
+      <arg direction="in" type="i" name="directory_id"/>
+      <arg direction="out" type="aa{sv}" name="entries"/>
+    </method>
     <method name="SearchByName">
       <arg direction="in" type="s" name="query"/>
       <arg direction="in" type="i" name="limit"/>

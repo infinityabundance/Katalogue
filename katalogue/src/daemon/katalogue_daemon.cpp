@@ -111,6 +111,41 @@ QVariantMap KatalogueDaemon::ListVolumes() const {
     return payload;
 }
 
+QList<QVariantMap> KatalogueDaemon::ListDirectories(int volumeId, int parentId) const {
+    QList<QVariantMap> entries;
+    const auto directories = m_db.listDirectories(volumeId, parentId);
+    entries.reserve(directories.size());
+    for (const auto &dir : directories) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("id"), dir.id);
+        entry.insert(QStringLiteral("volume_id"), dir.volumeId);
+        entry.insert(QStringLiteral("parent_id"), dir.parentId);
+        entry.insert(QStringLiteral("name"), dir.name);
+        entry.insert(QStringLiteral("full_path"), dir.fullPath);
+        entries.append(entry);
+    }
+    return entries;
+}
+
+QList<QVariantMap> KatalogueDaemon::ListFiles(int directoryId) const {
+    QList<QVariantMap> entries;
+    const auto files = m_db.listFilesInDirectory(directoryId);
+    entries.reserve(files.size());
+    for (const auto &file : files) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("id"), file.id);
+        entry.insert(QStringLiteral("directory_id"), file.directoryId);
+        entry.insert(QStringLiteral("name"), file.name);
+        entry.insert(QStringLiteral("size"), static_cast<qint64>(file.size));
+        entry.insert(QStringLiteral("mtime"), file.mtime.isValid()
+                                              ? file.mtime.toString(Qt::ISODate)
+                                              : QString());
+        entry.insert(QStringLiteral("file_type"), file.fileType);
+        entries.append(entry);
+    }
+    return entries;
+}
+
 QVariantMap KatalogueDaemon::SearchByName(const QString &query, int limit, int offset) const {
     QVariantMap payload;
     const auto results = m_db.searchByName(query, limit, offset);

@@ -17,9 +17,23 @@ Kirigami.Card {
         ListView {
             width: parent.width
             height: 200
-            model: []
-            delegate: Label {
-                text: modelData
+            model: KatalogueClient.directoryEntries
+            delegate: Item {
+                width: parent.width
+                height: Kirigami.Units.gridUnit * 2
+                property int dirId: modelData["id"]
+
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: modelData["name"]
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        KatalogueClient.selectedDirectoryId = dirId
+                    }
+                }
             }
         }
     }

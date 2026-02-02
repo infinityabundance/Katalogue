@@ -412,6 +412,107 @@ QList<VolumeInfo> KatalogueDatabase::listVolumes() const {
     return volumes;
 }
 
+QList<DirectoryInfo> KatalogueDatabase::listDirectories(int volumeId, int parentId) const {
+    QList<DirectoryInfo> directories;
+    if (!m_db.isOpen()) {
+        return directories;
+    }
+
+    QSqlQuery query(m_db);
+    if (parentId < 0) {
+        query.prepare("SELECT id, volume_id, parent_id, name, full_path "
+                      "FROM directories WHERE volume_id = ? AND (parent_id IS NULL OR parent_id = -1) "
+                      "ORDER BY name");
+        query.addBindValue(volumeId);
+    } else {
+        query.prepare("SELECT id, volume_id, parent_id, name, full_path "
+                      "FROM directories WHERE volume_id = ? AND parent_id = ? "
+                      "ORDER BY name");
+        query.addBindValue(volumeId);
+        query.addBindValue(parentId);
+    }
+
+    if (!query.exec()) {
+        qWarning() << "Failed to list directories" << query.lastError();
+        return directories;
+    }
+
+    while (query.next()) {
+        DirectoryInfo info;
+        info.id = query.value(0).toInt();
+        info.volumeId = query.value(1).toInt();
+        info.parentId = query.value(2).isNull() ? -1 : query.value(2).toInt();
+        info.name = query.value(3).toString();
+        info.fullPath = query.value(4).toString();
+        directories.append(info);
+    }
+
+    return directories;
+}
+
+QList<FileInfo> KatalogueDatabase::listFilesInDirectory(int directoryId) const {
+    QList<FileInfo> files;
+    if (!m_db.isOpen()) {
+        return files;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT id, directory_id, name, size, mtime, ctime, file_type, hash, attrs "
+                  "FROM files WHERE directory_id = ? "
+                  "ORDER BY name");
+    query.addBindValue(directoryId);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to list files" << query.lastError();
+        return files;
+    }
+
+    while (query.next()) {
+        FileInfo info;
+        info.id = query.value(0).toInt();
+        info.directoryId = query.value(1).toInt();
+        info.name = query.value(2).toString();
+        info.size = query.value(3).toLongLong();
+        if (!query.value(4).isNull()) {
+            info.mtime = QDateTime::fromSecsSinceEpoch(query.value(4).toLongLong(), Qt::UTC);
+        }
+        if (!query.value(5).isNull()) {
+            info.ctime = QDateTime::fromSecsSinceEpoch(query.value(5).toLongLong(), Qt::UTC);
+        }
+        info.fileType = query.value(6).toString();
+        info.hash = query.value(7).toString();
+        info.attrs = static_cast<quint32>(query.value(8).toUInt());
+        files.append(info);
+    }
+
+    return files;
+}
+
+std::optional<DirectoryInfo> KatalogueDatabase::getDirectory(int directoryId) const {
+    if (!m_db.isOpen()) {
+        return std::nullopt;
+    }
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT id, volume_id, parent_id, name, full_path FROM directories WHERE id = ?");
+    query.addBindValue(directoryId);
+    if (!query.exec()) {
+        qWarning() << "Failed to get directory" << query.lastError();
+        return std::nullopt;
+    }
+    if (!query.next()) {
+        return std::nullopt;
+    }
+
+    DirectoryInfo info;
+    info.id = query.value(0).toInt();
+    info.volumeId = query.value(1).toInt();
+    info.parentId = query.value(2).isNull() ? -1 : query.value(2).toInt();
+    info.name = query.value(3).toString();
+    info.fullPath = query.value(4).toString();
+    return info;
+}
+
 QList<SearchResult> KatalogueDatabase::searchByName(const QString &queryText, int limit, int offset) const {
     QList<SearchResult> results;
     if (!m_db.isOpen()) {

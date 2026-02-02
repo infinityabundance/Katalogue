@@ -16,8 +16,21 @@ Kirigami.Card {
 
         Repeater {
             model: KatalogueClient.volumes
-            delegate: Label {
-                text: modelData["label"] || "Unnamed volume"
+            delegate: Item {
+                width: parent.width
+                height: Kirigami.Units.gridUnit * 2
+
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: modelData["label"] || "Unnamed volume"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        KatalogueClient.selectedVolumeId = modelData["id"]
+                    }
+                }
             }
         }
     }

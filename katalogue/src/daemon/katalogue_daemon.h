@@ -36,6 +36,8 @@ public slots:
     bool CancelScan(uint scanId);
     QVariantMap GetScanStatus(uint scanId) const;
     QVariantMap ListVolumes() const;
+    QList<QVariantMap> ListDirectories(int volumeId, int parentId) const;
+    QList<QVariantMap> ListFiles(int directoryId) const;
     QVariantMap SearchByName(const QString &query, int limit, int offset) const;
 
 signals:

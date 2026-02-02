@@ -17,12 +17,11 @@ Kirigami.Card {
         ListView {
             width: parent.width
             height: 240
-            model: KatalogueClient.searchResults
+            model: KatalogueClient.fileEntries
 
             delegate: Row {
                 spacing: Kirigami.Units.smallSpacing
-                Label { text: modelData["file_name"] }
-                Label { text: modelData["full_path"] }
+                Label { text: modelData["name"] }
                 Label { text: modelData["size"] + " B" }
             }
         }
