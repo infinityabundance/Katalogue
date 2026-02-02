@@ -1042,6 +1042,57 @@ QList<QPair<QString, QString>> KatalogueDatabase::tagsForFile(int fileId) const 
     return tags;
 }
 
+QList<SearchResult> KatalogueDatabase::listAllFiles(const std::optional<int> &volumeId) const {
+    QList<SearchResult> results;
+    if (!m_db.isOpen()) {
+        return results;
+    }
+
+    QSqlQuery query(m_db);
+    if (volumeId.has_value()) {
+        query.prepare(
+            "SELECT files.id, files.directory_id, directories.volume_id, files.name, "
+            "directories.full_path || '/' || files.name AS full_path, "
+            "volumes.label, files.file_type, files.size, files.mtime "
+            "FROM files "
+            "JOIN directories ON directories.id = files.directory_id "
+            "JOIN volumes ON volumes.id = directories.volume_id "
+            "WHERE directories.volume_id = ? "
+            "ORDER BY volumes.label, directories.full_path, files.name");
+        query.addBindValue(volumeId.value());
+    } else {
+        query.prepare(
+            "SELECT files.id, files.directory_id, directories.volume_id, files.name, "
+            "directories.full_path || '/' || files.name AS full_path, "
+            "volumes.label, files.file_type, files.size, files.mtime "
+            "FROM files "
+            "JOIN directories ON directories.id = files.directory_id "
+            "JOIN volumes ON volumes.id = directories.volume_id "
+            "ORDER BY volumes.label, directories.full_path, files.name");
+    }
+
+    if (!query.exec()) {
+        qWarning() << "Failed to list all files" << query.lastError();
+        return results;
+    }
+
+    while (query.next()) {
+        SearchResult result;
+        result.fileId = query.value(0).toInt();
+        result.directoryId = query.value(1).toInt();
+        result.volumeId = query.value(2).toInt();
+        result.fileName = query.value(3).toString();
+        result.fullPath = query.value(4).toString();
+        result.volumeLabel = query.value(5).toString();
+        result.fileType = query.value(6).toString();
+        result.size = query.value(7).toLongLong();
+        result.mtime = QDateTime::fromSecsSinceEpoch(query.value(8).toLongLong(), Qt::UTC);
+        results.append(result);
+    }
+
+    return results;
+}
+
 int KatalogueDatabase::createVirtualFolder(const QString &name, int parentId) {
     if (!m_db.isOpen()) {
         return -1;
