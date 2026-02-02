@@ -5,5 +5,44 @@
     <method name="Ping">
       <arg direction="out" type="s" name="response"/>
     </method>
+    <method name="OpenProject">
+      <arg direction="in" type="s" name="path"/>
+      <arg direction="out" type="b" name="ok"/>
+    </method>
+    <method name="StartScan">
+      <arg direction="in" type="s" name="root_path"/>
+      <arg direction="out" type="u" name="scan_id"/>
+    </method>
+    <method name="CancelScan">
+      <arg direction="in" type="u" name="scan_id"/>
+      <arg direction="out" type="b" name="ok"/>
+    </method>
+    <method name="GetScanStatus">
+      <arg direction="in" type="u" name="scan_id"/>
+      <arg direction="out" type="s" name="status"/>
+      <arg direction="out" type="i" name="directories"/>
+      <arg direction="out" type="i" name="files"/>
+      <arg direction="out" type="x" name="bytes"/>
+    </method>
+    <method name="ListVolumes">
+      <arg direction="out" type="a{sv}" name="volumes"/>
+    </method>
+    <method name="SearchByName">
+      <arg direction="in" type="s" name="query"/>
+      <arg direction="in" type="i" name="limit"/>
+      <arg direction="in" type="i" name="offset"/>
+      <arg direction="out" type="a{sv}" name="results"/>
+    </method>
+    <signal name="ScanProgress">
+      <arg type="u" name="scan_id"/>
+      <arg type="s" name="path"/>
+      <arg type="i" name="directories"/>
+      <arg type="i" name="files"/>
+      <arg type="x" name="bytes"/>
+    </signal>
+    <signal name="ScanFinished">
+      <arg type="u" name="scan_id"/>
+      <arg type="s" name="status"/>
+    </signal>
   </interface>
 </node>
