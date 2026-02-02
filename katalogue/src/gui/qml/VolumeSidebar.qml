@@ -10,7 +10,7 @@ Kirigami.Card {
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            text: "Volumes"
+            text: qsTr("Volumes")
             level: 3
         }
 
@@ -34,14 +34,14 @@ Kirigami.Card {
                     Label {
                         id: volumeLabel
                         anchors.verticalCenter: parent.verticalCenter
-                        text: modelData["label"] || "Unnamed volume"
+                        text: modelData["label"] || qsTr("Unnamed volume")
                         width: parent.width * 0.6
                         elide: Text.ElideRight
                         color: isSelected ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
                     }
 
                     Button {
-                        text: "Rescan"
+                        text: qsTr("Rescan")
                         onClicked: {
                             const path = modelData["physical_hint"] || ""
                             if (path.length > 0) {
@@ -59,7 +59,7 @@ Kirigami.Card {
                 Menu {
                     id: volumeMenu
                     MenuItem {
-                        text: "Rescan volume…"
+                        text: qsTr("Rescan volume…")
                         onTriggered: {
                             const path = modelData["physical_hint"] || ""
                             if (path.length > 0) {
@@ -68,11 +68,11 @@ Kirigami.Card {
                         }
                     }
                     MenuItem {
-                        text: "Rename volume…"
+                        text: qsTr("Rename volume…")
                         onTriggered: renameDialog.open()
                     }
                     MenuItem {
-                        text: "Reveal in file manager"
+                        text: qsTr("Reveal in file manager")
                         enabled: (modelData["physical_hint"] || "") !== ""
                         onTriggered: {
                             const path = modelData["physical_hint"] || ""
@@ -86,7 +86,7 @@ Kirigami.Card {
                 Dialog {
                     id: renameDialog
                     modal: true
-                    title: "Rename volume"
+                    title: qsTr("Rename volume")
                     standardButtons: Dialog.Ok | Dialog.Cancel
                     property string newName: ""
                     onAccepted: {

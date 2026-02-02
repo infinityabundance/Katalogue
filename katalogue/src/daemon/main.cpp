@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QObject>
 #include <QDBusConnection>
 #include <QDBusError>
 
@@ -10,18 +11,18 @@ int main(int argc, char **argv) {
 
     KatalogueDaemon daemon;
     if (!daemon.init()) {
-        qCritical() << "Katalogue daemon initialization failed.";
+        qCritical() << QObject::tr("Katalogue daemon initialization failed.");
         return 1;
     }
 
     if (!QDBusConnection::sessionBus().isConnected()) {
-        qCritical() << "Failed to connect to session bus"
+        qCritical() << QObject::tr("Failed to connect to session bus")
                     << QDBusConnection::sessionBus().lastError().message();
         return 1;
     }
 
     if (!QDBusConnection::sessionBus().registerService(QStringLiteral("org.kde.Katalogue1"))) {
-        qCritical() << "Failed to register service"
+        qCritical() << QObject::tr("Failed to register service")
                     << QDBusConnection::sessionBus().lastError().message();
         return 1;
     }
@@ -30,12 +31,12 @@ int main(int argc, char **argv) {
                                                       &daemon,
                                                       QDBusConnection::ExportAllSlots |
                                                           QDBusConnection::ExportAllSignals)) {
-        qCritical() << "Failed to register object"
+        qCritical() << QObject::tr("Failed to register object")
                     << QDBusConnection::sessionBus().lastError().message();
         return 1;
     }
 
-    qInfo() << "Katalogue daemon started (DBus)";
+    qInfo() << QObject::tr("Katalogue daemon started (DBus)");
 
     return app.exec();
 }

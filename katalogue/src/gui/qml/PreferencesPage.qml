@@ -5,7 +5,7 @@ import org.kde.kirigami as Kirigami
 
 Kirigami.ScrollablePage {
     id: root
-    title: "Preferences"
+    title: qsTr("Preferences")
 
     ColumnLayout {
         anchors.margins: Kirigami.Units.largeSpacing
@@ -13,31 +13,31 @@ Kirigami.ScrollablePage {
         spacing: Kirigami.Units.largeSpacing
 
         Kirigami.Heading {
-            text: "Scanning"
+            text: qsTr("Scanning")
             level: 2
         }
 
         CheckBox {
-            text: "Include hidden files"
+            text: qsTr("Include hidden files")
             checked: KatalogueClient.scannerIncludeHidden
             onToggled: KatalogueClient.scannerIncludeHidden = checked
         }
 
         CheckBox {
-            text: "Follow symlinks"
+            text: qsTr("Follow symlinks")
             checked: KatalogueClient.scannerFollowSymlinks
             onToggled: KatalogueClient.scannerFollowSymlinks = checked
         }
 
         CheckBox {
-            text: "Compute file hashes"
+            text: qsTr("Compute file hashes")
             checked: KatalogueClient.scannerComputeHashes
             onToggled: KatalogueClient.scannerComputeHashes = checked
         }
 
         RowLayout {
             spacing: Kirigami.Units.smallSpacing
-            Label { text: "Maximum depth (–1 = unlimited)" }
+            Label { text: qsTr("Maximum depth (–1 = unlimited)") }
             SpinBox {
                 from: -1
                 to: 64
@@ -46,7 +46,7 @@ Kirigami.ScrollablePage {
             }
         }
 
-        Label { text: "Exclude patterns (one per line, wildcards allowed)" }
+        Label { text: qsTr("Exclude patterns (one per line, wildcards allowed)") }
         TextArea {
             text: KatalogueClient.scannerExcludePatternsString
             wrapMode: TextArea.NoWrap
@@ -58,12 +58,12 @@ Kirigami.ScrollablePage {
         Kirigami.Separator { }
 
         Kirigami.Heading {
-            text: "User Interface"
+            text: qsTr("User Interface")
             level: 2
         }
 
         CheckBox {
-            text: "Confirm before deleting virtual folders"
+            text: qsTr("Confirm before deleting virtual folders")
             checked: KatalogueClient.uiConfirmVirtualFolderDelete
             onToggled: KatalogueClient.uiConfirmVirtualFolderDelete = checked
         }

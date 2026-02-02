@@ -10,7 +10,7 @@ Kirigami.Card {
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            text: "Items"
+            text: qsTr("Items")
             level: 3
         }
 
@@ -31,7 +31,7 @@ Kirigami.Card {
                     }
                     Label {
                         text: modelData["volumeLabel"] + ": " + modelData["fullPath"]
-                        color: "#888888"
+                        color: Kirigami.Theme.disabledTextColor
                         elide: Text.ElideMiddle
                         width: parent.width
                     }
@@ -46,7 +46,7 @@ Kirigami.Card {
                 }
 
                 Button {
-                    text: "Remove"
+                    text: qsTr("Remove")
                     anchors.right: parent.right
                     onClicked: {
                         KatalogueClient.removeFileFromVirtualFolder(

@@ -12,7 +12,7 @@ Kirigami.Card {
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            text: "Files"
+            text: qsTr("Files")
             level: 3
         }
 
@@ -38,7 +38,7 @@ Kirigami.Card {
                     Label { text: modelData["name"] }
                     Label { text: modelData["size"] + " B" }
                     Button {
-                        text: "Add"
+                        text: qsTr("Add")
                         enabled: KatalogueClient.selectedVirtualFolderId >= 0
                         onClicked: {
                             KatalogueClient.addFileToVirtualFolder(
@@ -68,8 +68,8 @@ Kirigami.Card {
 
                 Menu {
                     id: fileContextMenu
-                    MenuItem {
-                        text: "Copy full path"
+                MenuItem {
+                        text: qsTr("Copy full path")
                         onTriggered: {
                             const path = modelData["full_path"] || ""
                             if (path.length > 0) {
@@ -78,7 +78,7 @@ Kirigami.Card {
                         }
                     }
                     MenuItem {
-                        text: "Add to virtual folder…"
+                        text: qsTr("Add to virtual folder…")
                         enabled: KatalogueClient.selectedVirtualFolderId >= 0
                         onTriggered: {
                             KatalogueClient.addFileToVirtualFolder(
@@ -91,15 +91,15 @@ Kirigami.Card {
         }
         Label {
             visible: KatalogueClient.selectedDirectoryId < 0
-            text: "Select a folder from the left to see its files."
-            color: "#888888"
+            text: qsTr("Select a folder from the left to see its files.")
+            color: Kirigami.Theme.disabledTextColor
         }
 
         Label {
             visible: KatalogueClient.selectedDirectoryId >= 0 &&
                      KatalogueClient.fileEntries.length === 0
-            text: "This folder is empty."
-            color: "#888888"
+            text: qsTr("This folder is empty.")
+            color: Kirigami.Theme.disabledTextColor
         }
     }
 

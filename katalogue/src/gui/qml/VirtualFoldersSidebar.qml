@@ -10,7 +10,7 @@ Kirigami.Card {
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            text: "Virtual Folders"
+            text: qsTr("Virtual Folders")
             level: 3
         }
 
@@ -39,7 +39,7 @@ Kirigami.Card {
                         color: isSelected ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
                     }
                     Button {
-                        text: "Delete"
+                        text: qsTr("Delete")
                         onClicked: {
                             if (KatalogueClient.uiConfirmVirtualFolderDelete) {
                                 confirmDialog.folderId = folderId
@@ -64,11 +64,11 @@ Kirigami.Card {
             spacing: Kirigami.Units.smallSpacing
             TextField {
                 id: newFolderField
-                placeholderText: "New folder"
+                placeholderText: qsTr("New folder")
                 width: parent.width * 0.7
             }
             Button {
-                text: "Create"
+                text: qsTr("Create")
                 onClicked: {
                     if (newFolderField.text.length > 0) {
                         KatalogueClient.createVirtualFolder(newFolderField.text, -1)
@@ -82,7 +82,7 @@ Kirigami.Card {
     Dialog {
         id: confirmDialog
         modal: true
-        title: "Delete virtual folder"
+        title: qsTr("Delete virtual folder")
         standardButtons: Dialog.Ok | Dialog.Cancel
         property int folderId: -1
         onAccepted: {
@@ -92,7 +92,7 @@ Kirigami.Card {
         }
         contentItem: Column {
             spacing: Kirigami.Units.smallSpacing
-            Label { text: "Are you sure you want to delete this virtual folder?" }
+            Label { text: qsTr("Are you sure you want to delete this virtual folder?") }
         }
     }
 }

@@ -1,10 +1,24 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QLocale>
+#include <QStandardPaths>
+#include <QTranslator>
 
 #include "katalogue_client.h"
 
 int main(int argc, char **argv) {
     QGuiApplication app(argc, argv);
+    app.setOrganizationName(QStringLiteral("Katalogue"));
+    app.setApplicationName(QStringLiteral("Katalogue"));
+    app.setApplicationDisplayName(QObject::tr("Katalogue"));
+
+    QTranslator translator;
+    const QString locale = QLocale::system().name();
+    const QString translationsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                     + QStringLiteral("/translations");
+    if (translator.load(QStringLiteral("katalogue_") + locale, translationsPath)) {
+        app.installTranslator(&translator);
+    }
 
     QQmlApplicationEngine engine;
     KatalogueClient client;

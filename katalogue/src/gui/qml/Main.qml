@@ -6,7 +6,7 @@ import org.kde.Katalogue 1.0
 
 Kirigami.ApplicationWindow {
     id: root
-    title: "Katalogue"
+    title: qsTr("Katalogue")
     width: 1024
     height: 720
     visible: true
@@ -19,7 +19,7 @@ Kirigami.ApplicationWindow {
     }
 
     pageStack.initialPage: Kirigami.Page {
-        title: "Catalog"
+        title: qsTr("Catalog")
 
         Column {
             anchors.fill: parent
@@ -40,7 +40,7 @@ Kirigami.ApplicationWindow {
                         Kirigami.ActionTextField {
                             id: searchField
                             width: parent.width * 0.4
-                            placeholderText: "Search files"
+                            placeholderText: qsTr("Search files")
                             onAccepted: performSearch()
                         }
 
@@ -54,34 +54,34 @@ Kirigami.ApplicationWindow {
                         Kirigami.ActionTextField {
                             id: fileTypeField
                             width: parent.width * 0.15
-                            placeholderText: "Type (e.g. mp3)"
+                            placeholderText: qsTr("Type (e.g. mp3)")
                             onAccepted: performSearch()
                         }
 
                         Button {
-                            text: "Search"
+                            text: qsTr("Search")
                             onClicked: performSearch()
                         }
 
                         Kirigami.ActionTextField {
                             id: scanField
                             width: parent.width * 0.25
-                            placeholderText: "Scan root path"
+                            placeholderText: qsTr("Scan root path")
                             onAccepted: KatalogueClient.startScan(text)
                         }
 
                         Button {
-                            text: "Scan..."
+                            text: qsTr("Scan...")
                             onClicked: scanDialog.open()
                         }
 
                         Button {
-                            text: "Open catalog..."
+                            text: qsTr("Open catalog...")
                             onClicked: openCatalogDialog.open()
                         }
 
                         Button {
-                            text: "Preferences"
+                            text: qsTr("Preferences")
                             onClicked: root.pageStack.push(Qt.resolvedUrl("PreferencesPage.qml"))
                         }
                     }
@@ -90,7 +90,7 @@ Kirigami.ApplicationWindow {
                         spacing: Kirigami.Units.smallSpacing
 
                         Label {
-                            text: "Catalog:"
+                            text: qsTr("Catalog:")
                             font.bold: true
                         }
 
@@ -108,9 +108,9 @@ Kirigami.ApplicationWindow {
                                 if (!info || !info["ok"]) {
                                     return ""
                                 }
-                                return " — " + info["volumeCount"] + " volumes, " + info["fileCount"] + " files"
+                                return qsTr(" — %1 volumes, %2 files").arg(info["volumeCount"]).arg(info["fileCount"])
                             }
-                            color: "#888888"
+                            color: Kirigami.Theme.disabledTextColor
                         }
                     }
 
@@ -122,7 +122,7 @@ Kirigami.ApplicationWindow {
                             spacing: Kirigami.Units.smallSpacing
 
                             Kirigami.Heading {
-                                text: "Scans"
+                                text: qsTr("Scans")
                                 level: 3
                             }
 
@@ -144,7 +144,7 @@ Kirigami.ApplicationWindow {
                                               : ""
                                     }
                                     Button {
-                                        text: "Cancel"
+                                        text: qsTr("Cancel")
                                         visible: modelData["status"] === "running"
                                         onClicked: KatalogueClient.cancelScan(modelData["id"])
                                     }
@@ -156,8 +156,8 @@ Kirigami.ApplicationWindow {
                     TabBar {
                         id: viewTabs
                         width: parent.width
-                        TabButton { text: "Physical" }
-                        TabButton { text: "Virtual" }
+                        TabButton { text: qsTr("Physical") }
+                        TabButton { text: qsTr("Virtual") }
                     }
 
                     StackLayout {
@@ -205,7 +205,7 @@ Kirigami.ApplicationWindow {
                                                         spacing: Kirigami.Units.smallSpacing
 
                                                         Kirigami.Heading {
-                                                            text: "Search Results"
+                                                            text: qsTr("Search Results")
                                                             level: 3
                                                         }
 
@@ -226,7 +226,7 @@ Kirigami.ApplicationWindow {
                                                                     }
                                                                     Label {
                                                                         text: modelData["volumeLabel"] + ": " + modelData["fullPath"]
-                                                                        color: "#888888"
+                                                                        color: Kirigami.Theme.disabledTextColor
                                                                         elide: Text.ElideMiddle
                                                                         width: parent.width
                                                                     }
@@ -240,7 +240,7 @@ Kirigami.ApplicationWindow {
                                                                     }
                                                                 }
                                                                 Button {
-                                                                    text: "Add"
+                                                                    text: qsTr("Add")
                                                                     anchors.right: parent.right
                                                                     enabled: KatalogueClient.selectedVirtualFolderId >= 0
                                                                     onClicked: {
@@ -255,8 +255,8 @@ Kirigami.ApplicationWindow {
                                                         Label {
                                                             visible: searchField.text.length > 0 &&
                                                                      KatalogueClient.searchResults.length === 0
-                                                            text: "No results found for \"" + searchField.text + "\""
-                                                            color: "#888888"
+                                                            text: qsTr("No results found for \"%1\"").arg(searchField.text)
+                                                            color: Kirigami.Theme.disabledTextColor
                                                             horizontalAlignment: Text.AlignHCenter
                                                             width: parent.width
                                                         }
@@ -303,7 +303,7 @@ Kirigami.ApplicationWindow {
 
     Dialogs.FolderDialog {
         id: scanDialog
-        title: "Select root folder to scan"
+        title: qsTr("Select root folder to scan")
         onAccepted: {
             const url = selectedFolder.toString()
             if (url.length > 0) {
@@ -315,8 +315,8 @@ Kirigami.ApplicationWindow {
 
     Dialogs.FileDialog {
         id: openCatalogDialog
-        title: "Open Katalogue catalog"
-        nameFilters: ["Katalogue catalogs (*.kdcatalog)", "All files (*)"]
+        title: qsTr("Open Katalogue catalog")
+        nameFilters: [qsTr("Katalogue catalogs (*.kdcatalog)"), qsTr("All files (*)")]
         onAccepted: {
             const url = selectedFile.toString()
             if (url.length > 0) {
@@ -339,11 +339,11 @@ Kirigami.ApplicationWindow {
 
     function rebuildVolumeFilterModel() {
         volumeFilterModel.clear()
-        volumeFilterModel.append({"label": "All volumes", "id": -1})
+        volumeFilterModel.append({"label": qsTr("All volumes"), "id": -1})
         for (let i = 0; i < KatalogueClient.volumes.length; i += 1) {
             const entry = KatalogueClient.volumes[i]
             volumeFilterModel.append({
-                "label": entry["label"] || "Unnamed volume",
+                "label": entry["label"] || qsTr("Unnamed volume"),
                 "id": entry["id"]
             })
         }
