@@ -14,15 +14,16 @@ Kirigami.Card {
             level: 3
         }
 
-        TableView {
+        ListView {
             width: parent.width
             height: 240
-            model: 3
+            model: KatalogueClient.searchResults
 
             delegate: Row {
                 spacing: Kirigami.Units.smallSpacing
-                Label { text: index === 0 ? "test_notes.txt" : index === 1 ? "image.png" : "music.ogg" }
-                Label { text: index === 0 ? "4 KB" : index === 1 ? "2 MB" : "5 MB" }
+                Label { text: modelData["file_name"] }
+                Label { text: modelData["full_path"] }
+                Label { text: modelData["size"] + " B" }
             }
         }
     }
