@@ -34,7 +34,8 @@ public:
 
 public slots:
     QString Ping() const;
-    bool OpenProject(const QString &path);
+    QVariantMap OpenProject(const QString &path);
+    QVariantMap GetProjectInfo() const;
     uint StartScan(const QString &rootPath);
     bool CancelScan(uint scanId);
     QVariantMap GetScanStatus(uint scanId) const;

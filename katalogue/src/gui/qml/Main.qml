@@ -13,6 +13,7 @@ Kirigami.ApplicationWindow {
 
     Component.onCompleted: {
         KatalogueClient.refreshVolumes()
+        KatalogueClient.refreshProjectInfo()
     }
 
     pageStack.initialPage: Kirigami.Page {
@@ -56,6 +57,39 @@ Kirigami.ApplicationWindow {
                         Button {
                             text: "Scan..."
                             onClicked: scanDialog.open()
+                        }
+
+                        Button {
+                            text: "Open catalog..."
+                            onClicked: openCatalogDialog.open()
+                        }
+                    }
+
+                    Row {
+                        spacing: Kirigami.Units.smallSpacing
+
+                        Label {
+                            text: "Catalog:"
+                            font.bold: true
+                        }
+
+                        Label {
+                            text: KatalogueClient.projectPath.length > 0
+                                  ? KatalogueClient.projectPath
+                                  : "(default catalog)"
+                            elide: Text.ElideMiddle
+                            width: parent.width * 0.5
+                        }
+
+                        Label {
+                            text: {
+                                const info = KatalogueClient.projectInfo
+                                if (!info || !info["ok"]) {
+                                    return ""
+                                }
+                                return " — " + info["volumeCount"] + " volumes, " + info["fileCount"] + " files"
+                            }
+                            color: "#888888"
                         }
                     }
 
@@ -120,6 +154,19 @@ Kirigami.ApplicationWindow {
             if (url.length > 0) {
                 const path = url.replace("file://", "")
                 KatalogueClient.startScan(path)
+            }
+        }
+    }
+
+    Dialogs.FileDialog {
+        id: openCatalogDialog
+        title: "Open Katalogue catalog"
+        nameFilters: ["Katalogue catalogs (*.kdcatalog)", "All files (*)"]
+        onAccepted: {
+            const url = selectedFile.toString()
+            if (url.length > 0) {
+                const path = url.replace("file://", "")
+                KatalogueClient.openProject(path)
             }
         }
     }

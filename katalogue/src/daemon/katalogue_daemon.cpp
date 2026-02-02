@@ -28,12 +28,70 @@ QString KatalogueDaemon::Ping() const {
     return QStringLiteral("pong");
 }
 
-bool KatalogueDaemon::OpenProject(const QString &path) {
-    if (path.trimmed().isEmpty()) {
-        return false;
+QVariantMap KatalogueDaemon::OpenProject(const QString &path) {
+    QVariantMap info;
+    const QString cleaned = QDir::cleanPath(path);
+    if (cleaned.trimmed().isEmpty()) {
+        info.insert(QStringLiteral("ok"), false);
+        info.insert(QStringLiteral("path"), QString());
+        info.insert(QStringLiteral("volumeCount"), 0);
+        info.insert(QStringLiteral("fileCount"), 0);
+        info.insert(QStringLiteral("totalBytes"), static_cast<qint64>(0));
+        return info;
     }
-    m_projectPath = path;
-    return m_db.openProject(m_projectPath);
+
+    const QFileInfo fileInfo(cleaned);
+    QDir().mkpath(fileInfo.absolutePath());
+    const QString absPath = fileInfo.absoluteFilePath();
+
+    const bool ok = m_db.openProject(absPath);
+    if (ok) {
+        m_projectPath = absPath;
+    }
+
+    info.insert(QStringLiteral("ok"), ok);
+    info.insert(QStringLiteral("path"), absPath);
+
+    const auto stats = m_db.projectStats();
+    if (stats.has_value()) {
+        info.insert(QStringLiteral("volumeCount"), stats->volumeCount);
+        info.insert(QStringLiteral("fileCount"), static_cast<qint64>(stats->fileCount));
+        info.insert(QStringLiteral("totalBytes"), static_cast<qint64>(stats->totalBytes));
+    } else {
+        info.insert(QStringLiteral("volumeCount"), 0);
+        info.insert(QStringLiteral("fileCount"), static_cast<qint64>(0));
+        info.insert(QStringLiteral("totalBytes"), static_cast<qint64>(0));
+    }
+
+    return info;
+}
+
+QVariantMap KatalogueDaemon::GetProjectInfo() const {
+    QVariantMap info;
+    if (m_projectPath.isEmpty() || !m_db.isOpen()) {
+        info.insert(QStringLiteral("ok"), false);
+        info.insert(QStringLiteral("path"), QString());
+        info.insert(QStringLiteral("volumeCount"), 0);
+        info.insert(QStringLiteral("fileCount"), static_cast<qint64>(0));
+        info.insert(QStringLiteral("totalBytes"), static_cast<qint64>(0));
+        return info;
+    }
+
+    info.insert(QStringLiteral("ok"), true);
+    info.insert(QStringLiteral("path"), m_projectPath);
+
+    const auto stats = m_db.projectStats();
+    if (stats.has_value()) {
+        info.insert(QStringLiteral("volumeCount"), stats->volumeCount);
+        info.insert(QStringLiteral("fileCount"), static_cast<qint64>(stats->fileCount));
+        info.insert(QStringLiteral("totalBytes"), static_cast<qint64>(stats->totalBytes));
+    } else {
+        info.insert(QStringLiteral("volumeCount"), 0);
+        info.insert(QStringLiteral("fileCount"), static_cast<qint64>(0));
+        info.insert(QStringLiteral("totalBytes"), static_cast<qint64>(0));
+    }
+
+    return info;
 }
 
 uint KatalogueDaemon::StartScan(const QString &rootPath) {
