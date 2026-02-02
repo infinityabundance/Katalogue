@@ -1,7 +1,11 @@
 #include "katalogue_database.h"
+#include "katalogue_scanner.h"
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QTemporaryDir>
 
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
@@ -77,6 +81,60 @@ int main(int argc, char **argv) {
 
     if (!db.searchByName(QStringLiteral("renamed")).isEmpty()) {
         qWarning() << "Deleted file still appears in search";
+        return 1;
+    }
+
+    QTemporaryDir tempDir;
+    if (!tempDir.isValid()) {
+        qWarning() << "Failed to create temp directory";
+        return 1;
+    }
+
+    const QString docsPath = tempDir.path() + QStringLiteral("/docs");
+    const QString mediaPath = tempDir.path() + QStringLiteral("/media");
+    if (!QDir().mkpath(docsPath) || !QDir().mkpath(mediaPath)) {
+        qWarning() << "Failed to create test folders";
+        return 1;
+    }
+
+    QFile readmeFile(docsPath + QStringLiteral("/readme.txt"));
+    if (!readmeFile.open(QIODevice::WriteOnly)) {
+        qWarning() << "Failed to create test file";
+        return 1;
+    }
+    readmeFile.write("hello");
+    readmeFile.close();
+
+    QFile imageFile(mediaPath + QStringLiteral("/photo.png"));
+    if (!imageFile.open(QIODevice::WriteOnly)) {
+        qWarning() << "Failed to create test file";
+        return 1;
+    }
+    imageFile.write("img");
+    imageFile.close();
+
+    KatalogueDatabase scanDb;
+    const QString scanDbPath = tempDir.path() + QStringLiteral("/scan.kdcatalog");
+    if (!scanDb.openProject(scanDbPath)) {
+        qWarning() << "Failed to open scan database";
+        return 1;
+    }
+
+    KatalogueScanner scanner;
+    ScanOptions options;
+    options.excludePatterns = {QStringLiteral("*.png")};
+    if (!scanner.scan(tempDir.path(), scanDb, {}, options)) {
+        qWarning() << "Scan failed";
+        return 1;
+    }
+
+    if (scanDb.searchByName(QStringLiteral("readme")).isEmpty()) {
+        qWarning() << "Scanner did not index readme";
+        return 1;
+    }
+
+    if (!scanDb.searchByName(QStringLiteral("photo")).isEmpty()) {
+        qWarning() << "Exclude pattern did not skip png";
         return 1;
     }
 
