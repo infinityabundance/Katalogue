@@ -56,6 +56,16 @@ public:
     bool removeTagFromFile(int fileId, const QString &key, const QString &value);
     QList<QPair<QString, QString>> tagsForFile(int fileId) const;
 
+    int createVirtualFolder(const QString &name, int parentId = -1);
+    bool renameVirtualFolder(int folderId, const QString &newName);
+    bool deleteVirtualFolder(int folderId);
+    QList<VirtualFolderInfo> listVirtualFolders(int parentId) const;
+    std::optional<VirtualFolderInfo> getVirtualFolder(int folderId) const;
+
+    bool addFileToVirtualFolder(int folderId, int fileId);
+    bool removeFileFromVirtualFolder(int folderId, int fileId);
+    QList<SearchResult> listVirtualFolderItems(int folderId) const;
+
 private:
     bool initializeSchema();
     QString directoryFullPath(int directoryId) const;

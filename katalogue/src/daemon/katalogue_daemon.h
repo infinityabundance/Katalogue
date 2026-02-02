@@ -49,6 +49,13 @@ public slots:
     QList<QVariantMap> GetFileTags(int fileId) const;
     void AddFileTag(int fileId, const QString &key, const QString &value);
     void RemoveFileTag(int fileId, const QString &key, const QString &value);
+    QList<QVariantMap> ListVirtualFolders(int parentId) const;
+    int CreateVirtualFolder(const QString &name, int parentId);
+    void RenameVirtualFolder(int folderId, const QString &newName);
+    void DeleteVirtualFolder(int folderId);
+    QList<QVariantMap> ListVirtualFolderItems(int folderId) const;
+    void AddFileToVirtualFolder(int folderId, int fileId);
+    void RemoveFileFromVirtualFolder(int folderId, int fileId);
 
 signals:
     void ScanProgress(uint scanId, const QString &path, int directories, int files, qint64 bytes);

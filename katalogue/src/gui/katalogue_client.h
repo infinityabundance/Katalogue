@@ -20,6 +20,9 @@ class KatalogueClient : public QObject {
     Q_PROPERTY(QVariantList activeScans READ activeScans NOTIFY activeScansChanged)
     Q_PROPERTY(QString projectPath READ projectPath NOTIFY projectPathChanged)
     Q_PROPERTY(QVariantMap projectInfo READ projectInfo NOTIFY projectInfoChanged)
+    Q_PROPERTY(QVariantList virtualFolders READ virtualFolders NOTIFY virtualFoldersChanged)
+    Q_PROPERTY(int selectedVirtualFolderId READ selectedVirtualFolderId WRITE setSelectedVirtualFolderId NOTIFY selectedVirtualFolderIdChanged)
+    Q_PROPERTY(QVariantList virtualFolderItems READ virtualFolderItems NOTIFY virtualFolderItemsChanged)
 
 public:
     explicit KatalogueClient(QObject *parent = nullptr);
@@ -35,6 +38,10 @@ public:
     QVariantList activeScans() const;
     QString projectPath() const;
     QVariantMap projectInfo() const;
+    QVariantList virtualFolders() const;
+    int selectedVirtualFolderId() const;
+    void setSelectedVirtualFolderId(int folderId);
+    QVariantList virtualFolderItems() const;
 
     Q_INVOKABLE void openProject(const QString &path);
     Q_INVOKABLE int startScan(const QString &rootPath);
@@ -53,6 +60,14 @@ public:
     Q_INVOKABLE QVariantList getFileTags(int fileId);
     Q_INVOKABLE void addFileTag(int fileId, const QString &key, const QString &value);
     Q_INVOKABLE void removeFileTag(int fileId, const QString &key, const QString &value);
+    Q_INVOKABLE void loadVirtualFolderChildren(int parentId);
+    Q_INVOKABLE int createVirtualFolder(const QString &name, int parentId);
+    Q_INVOKABLE void renameVirtualFolder(int folderId, const QString &newName);
+    Q_INVOKABLE void deleteVirtualFolder(int folderId);
+    Q_INVOKABLE void loadVirtualFolderItems(int folderId);
+    Q_INVOKABLE void addFileToVirtualFolder(int folderId, int fileId);
+    Q_INVOKABLE void removeFileFromVirtualFolder(int folderId, int fileId);
+    Q_INVOKABLE void jumpToVirtualFolderItem(int volumeId, int directoryId);
     Q_INVOKABLE void refreshProjectInfo();
     Q_INVOKABLE void loadRootForVolume(int volumeId);
     Q_INVOKABLE void loadDirectory(int directoryId);
@@ -67,6 +82,9 @@ signals:
     void activeScansChanged();
     void projectPathChanged();
     void projectInfoChanged();
+    void virtualFoldersChanged();
+    void selectedVirtualFolderIdChanged();
+    void virtualFolderItemsChanged();
     void scanProgress(uint scanId, const QString &path, int directories, int files, qint64 bytes);
     void scanFinished(uint scanId, const QString &status);
 
@@ -97,6 +115,9 @@ private slots:
     QVariantList m_fileEntries;
     QString m_projectPath;
     QVariantMap m_projectInfo;
+    QVariantList m_virtualFolders;
+    int m_selectedVirtualFolderId = -1;
+    QVariantList m_virtualFolderItems;
     QHash<int, ScanInfo> m_scans;
     QVariantList m_activeScans;
     int m_selectedVolumeId = -1;

@@ -15,6 +15,7 @@ Kirigami.ApplicationWindow {
         KatalogueClient.refreshVolumes()
         KatalogueClient.refreshProjectInfo()
         rebuildVolumeFilterModel()
+        KatalogueClient.loadVirtualFolderChildren(-1)
     }
 
     pageStack.initialPage: Kirigami.Page {
@@ -28,14 +29,9 @@ Kirigami.ApplicationWindow {
                 spacing: Kirigami.Units.largeSpacing
                 anchors.fill: parent
 
-                VolumeSidebar {
-                    width: 220
-                    height: parent.height
-                }
-
                 Column {
                     spacing: Kirigami.Units.largeSpacing
-                    width: parent.width - 220
+                    width: parent.width
                     height: parent.height
 
                     Row {
@@ -152,61 +148,124 @@ Kirigami.ApplicationWindow {
                         }
                     }
 
-                    Kirigami.Card {
-                        visible: KatalogueClient.searchResults.length > 0
+                    TabBar {
+                        id: viewTabs
                         width: parent.width
+                        TabButton { text: "Physical" }
+                        TabButton { text: "Virtual" }
+                    }
 
-                        contentItem: Column {
-                            spacing: Kirigami.Units.smallSpacing
+                    StackLayout {
+                        width: parent.width
+                        height: parent.height - 220
+                        currentIndex: viewTabs.currentIndex
 
-                            Kirigami.Heading {
-                                text: "Search Results"
-                                level: 3
-                            }
+                        Item {
+                            Column {
+                                anchors.fill: parent
+                                spacing: Kirigami.Units.largeSpacing
 
-                            ListView {
-                                width: parent.width
-                                height: Math.min(200, contentHeight)
-                                model: KatalogueClient.searchResults
-                                delegate: Item {
-                                    width: parent.width
-                                    height: Kirigami.Units.gridUnit * 2
+                                Row {
+                                    spacing: Kirigami.Units.largeSpacing
+                                    anchors.fill: parent
 
-                                    Column {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        spacing: 2
-                                        Label {
-                                            text: modelData["fileName"]
-                                            font.bold: true
-                                        }
-                                        Label {
-                                            text: modelData["volumeLabel"] + ": " + modelData["fullPath"]
-                                            color: "#888888"
-                                            elide: Text.ElideMiddle
-                                            width: parent.width
-                                        }
+                                    VolumeSidebar {
+                                        width: 220
+                                        height: parent.height
                                     }
 
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: {
-                                            KatalogueClient.jumpToResult(modelData["volumeId"],
-                                                                         modelData["directoryId"])
+                                    Column {
+                                        spacing: Kirigami.Units.largeSpacing
+                                        width: parent.width - 220
+                                        height: parent.height
+
+                                        Kirigami.Card {
+                                            visible: KatalogueClient.searchResults.length > 0
+                                            width: parent.width
+
+                                            contentItem: Column {
+                                                spacing: Kirigami.Units.smallSpacing
+
+                                                Kirigami.Heading {
+                                                    text: "Search Results"
+                                                    level: 3
+                                                }
+
+                                                ListView {
+                                                    width: parent.width
+                                                    height: Math.min(200, contentHeight)
+                                                    model: KatalogueClient.searchResults
+                                                    delegate: Item {
+                                                        width: parent.width
+                                                        height: Kirigami.Units.gridUnit * 2
+
+                                                        Column {
+                                                            anchors.verticalCenter: parent.verticalCenter
+                                                            spacing: 2
+                                                            Label {
+                                                                text: modelData["fileName"]
+                                                                font.bold: true
+                                                            }
+                                                            Label {
+                                                                text: modelData["volumeLabel"] + ": " + modelData["fullPath"]
+                                                                color: "#888888"
+                                                                elide: Text.ElideMiddle
+                                                                width: parent.width
+                                                            }
+                                                        }
+
+                                                        MouseArea {
+                                                            anchors.fill: parent
+                                                            onClicked: {
+                                                                KatalogueClient.jumpToResult(modelData["volumeId"],
+                                                                                             modelData["directoryId"])
+                                                            }
+                                                        }
+                                                        Button {
+                                                            text: "Add"
+                                                            anchors.right: parent.right
+                                                            enabled: KatalogueClient.selectedVirtualFolderId >= 0
+                                                            onClicked: {
+                                                                KatalogueClient.addFileToVirtualFolder(
+                                                                    KatalogueClient.selectedVirtualFolderId,
+                                                                    modelData["fileId"])
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        DirectoryTree {
+                                            height: parent.height * 0.4
+                                            width: parent.width
+                                        }
+
+                                        FileView {
+                                            height: parent.height * 0.6
+                                            width: parent.width
                                         }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    DirectoryTree {
-                        height: parent.height * 0.4
-                        width: parent.width
-                    }
+                        Item {
+                            Row {
+                                anchors.fill: parent
+                                spacing: Kirigami.Units.largeSpacing
 
-                    FileView {
-                        height: parent.height * 0.6
-                        width: parent.width
+                                VirtualFoldersSidebar {
+                                    width: 260
+                                    height: parent.height
+                                }
+
+                                VirtualFolderItemsView {
+                                    width: parent.width - 260
+                                    height: parent.height
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -343,6 +343,62 @@ void KatalogueDaemon::RemoveFileTag(int fileId, const QString &key, const QStrin
     m_db.removeTagFromFile(fileId, key, value);
 }
 
+QList<QVariantMap> KatalogueDaemon::ListVirtualFolders(int parentId) const {
+    QList<QVariantMap> entries;
+    const auto folders = m_db.listVirtualFolders(parentId);
+    entries.reserve(folders.size());
+    for (const auto &folder : folders) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("id"), folder.id);
+        entry.insert(QStringLiteral("parentId"), folder.parentId);
+        entry.insert(QStringLiteral("name"), folder.name);
+        entries.append(entry);
+    }
+    return entries;
+}
+
+int KatalogueDaemon::CreateVirtualFolder(const QString &name, int parentId) {
+    return m_db.createVirtualFolder(name, parentId);
+}
+
+void KatalogueDaemon::RenameVirtualFolder(int folderId, const QString &newName) {
+    m_db.renameVirtualFolder(folderId, newName);
+}
+
+void KatalogueDaemon::DeleteVirtualFolder(int folderId) {
+    m_db.deleteVirtualFolder(folderId);
+}
+
+QList<QVariantMap> KatalogueDaemon::ListVirtualFolderItems(int folderId) const {
+    QList<QVariantMap> entries;
+    const auto items = m_db.listVirtualFolderItems(folderId);
+    entries.reserve(items.size());
+    for (const auto &item : items) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("fileId"), item.fileId);
+        entry.insert(QStringLiteral("directoryId"), item.directoryId);
+        entry.insert(QStringLiteral("volumeId"), item.volumeId);
+        entry.insert(QStringLiteral("fileName"), item.fileName);
+        entry.insert(QStringLiteral("fullPath"), item.fullPath);
+        entry.insert(QStringLiteral("volumeLabel"), item.volumeLabel);
+        entry.insert(QStringLiteral("fileType"), item.fileType);
+        entry.insert(QStringLiteral("size"), static_cast<qint64>(item.size));
+        entry.insert(QStringLiteral("mtime"), item.mtime.isValid()
+                                             ? item.mtime.toString(Qt::ISODate)
+                                             : QString());
+        entries.append(entry);
+    }
+    return entries;
+}
+
+void KatalogueDaemon::AddFileToVirtualFolder(int folderId, int fileId) {
+    m_db.addFileToVirtualFolder(folderId, fileId);
+}
+
+void KatalogueDaemon::RemoveFileFromVirtualFolder(int folderId, int fileId) {
+    m_db.removeFileFromVirtualFolder(folderId, fileId);
+}
+
 void KatalogueDaemon::runScan(uint scanId) {
     auto it = m_jobs.find(scanId);
     if (it == m_jobs.end()) {

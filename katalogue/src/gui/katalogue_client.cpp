@@ -72,6 +72,29 @@ QVariantMap KatalogueClient::projectInfo() const {
     return m_projectInfo;
 }
 
+QVariantList KatalogueClient::virtualFolders() const {
+    return m_virtualFolders;
+}
+
+int KatalogueClient::selectedVirtualFolderId() const {
+    return m_selectedVirtualFolderId;
+}
+
+void KatalogueClient::setSelectedVirtualFolderId(int folderId) {
+    if (m_selectedVirtualFolderId == folderId) {
+        return;
+    }
+    m_selectedVirtualFolderId = folderId;
+    emit selectedVirtualFolderIdChanged();
+    if (m_selectedVirtualFolderId >= 0) {
+        loadVirtualFolderItems(m_selectedVirtualFolderId);
+    }
+}
+
+QVariantList KatalogueClient::virtualFolderItems() const {
+    return m_virtualFolderItems;
+}
+
 void KatalogueClient::openProject(const QString &path) {
     if (!ensureInterface()) {
         return;
@@ -232,6 +255,89 @@ void KatalogueClient::removeFileTag(int fileId, const QString &key, const QStrin
         return;
     }
     m_iface->call(QStringLiteral("RemoveFileTag"), fileId, key, value);
+}
+
+void KatalogueClient::loadVirtualFolderChildren(int parentId) {
+    if (!ensureInterface()) {
+        return;
+    }
+    QDBusReply<QVariantList> reply = m_iface->call(QStringLiteral("ListVirtualFolders"), parentId);
+    if (!reply.isValid()) {
+        return;
+    }
+    m_virtualFolders = reply.value();
+    emit virtualFoldersChanged();
+}
+
+int KatalogueClient::createVirtualFolder(const QString &name, int parentId) {
+    if (!ensureInterface()) {
+        return -1;
+    }
+    QDBusReply<int> reply = m_iface->call(QStringLiteral("CreateVirtualFolder"), name, parentId);
+    if (!reply.isValid()) {
+        return -1;
+    }
+    const int folderId = reply.value();
+    loadVirtualFolderChildren(parentId);
+    return folderId;
+}
+
+void KatalogueClient::renameVirtualFolder(int folderId, const QString &newName) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("RenameVirtualFolder"), folderId, newName);
+    loadVirtualFolderChildren(-1);
+}
+
+void KatalogueClient::deleteVirtualFolder(int folderId) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("DeleteVirtualFolder"), folderId);
+    if (m_selectedVirtualFolderId == folderId) {
+        m_selectedVirtualFolderId = -1;
+        m_virtualFolderItems.clear();
+        emit selectedVirtualFolderIdChanged();
+        emit virtualFolderItemsChanged();
+    }
+    loadVirtualFolderChildren(-1);
+}
+
+void KatalogueClient::loadVirtualFolderItems(int folderId) {
+    if (!ensureInterface()) {
+        return;
+    }
+    QDBusReply<QVariantList> reply = m_iface->call(QStringLiteral("ListVirtualFolderItems"), folderId);
+    if (!reply.isValid()) {
+        return;
+    }
+    m_virtualFolderItems = reply.value();
+    emit virtualFolderItemsChanged();
+}
+
+void KatalogueClient::addFileToVirtualFolder(int folderId, int fileId) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("AddFileToVirtualFolder"), folderId, fileId);
+    if (m_selectedVirtualFolderId == folderId) {
+        loadVirtualFolderItems(folderId);
+    }
+}
+
+void KatalogueClient::removeFileFromVirtualFolder(int folderId, int fileId) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("RemoveFileFromVirtualFolder"), folderId, fileId);
+    if (m_selectedVirtualFolderId == folderId) {
+        loadVirtualFolderItems(folderId);
+    }
+}
+
+void KatalogueClient::jumpToVirtualFolderItem(int volumeId, int directoryId) {
+    jumpToResult(volumeId, directoryId);
 }
 
 void KatalogueClient::refreshProjectInfo() {

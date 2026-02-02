@@ -75,6 +75,34 @@
       <arg direction="in" type="s" name="key"/>
       <arg direction="in" type="s" name="value"/>
     </method>
+    <method name="ListVirtualFolders">
+      <arg direction="in" type="i" name="parent_id"/>
+      <arg direction="out" type="aa{sv}" name="folders"/>
+    </method>
+    <method name="CreateVirtualFolder">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="in" type="i" name="parent_id"/>
+      <arg direction="out" type="i" name="folder_id"/>
+    </method>
+    <method name="RenameVirtualFolder">
+      <arg direction="in" type="i" name="folder_id"/>
+      <arg direction="in" type="s" name="new_name"/>
+    </method>
+    <method name="DeleteVirtualFolder">
+      <arg direction="in" type="i" name="folder_id"/>
+    </method>
+    <method name="ListVirtualFolderItems">
+      <arg direction="in" type="i" name="folder_id"/>
+      <arg direction="out" type="aa{sv}" name="items"/>
+    </method>
+    <method name="AddFileToVirtualFolder">
+      <arg direction="in" type="i" name="folder_id"/>
+      <arg direction="in" type="i" name="file_id"/>
+    </method>
+    <method name="RemoveFileFromVirtualFolder">
+      <arg direction="in" type="i" name="folder_id"/>
+      <arg direction="in" type="i" name="file_id"/>
+    </method>
     <signal name="ScanProgress">
       <arg type="u" name="scan_id"/>
       <arg type="s" name="path"/>
