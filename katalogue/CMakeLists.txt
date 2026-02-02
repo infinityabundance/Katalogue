@@ -10,6 +10,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core Sql DBus Quick Qml)
 
 qt_standard_project_setup()
 
+enable_testing()
+
 add_library(katalogue-core
     src/core/katalogue_database.cpp
     src/core/katalogue_scanner.cpp
@@ -77,3 +79,5 @@ target_link_libraries(core_test
     Qt6::Core
     Qt6::Sql
 )
+
+add_test(NAME core_test COMMAND core_test)
