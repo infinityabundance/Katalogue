@@ -7,6 +7,7 @@
 #include <QDBusContext>
 
 #include "katalogue_database.h"
+#include "katalogue_settings.h"
 #include "katalogue_scanner.h"
 
 struct ScanJob {
@@ -70,6 +71,7 @@ private:
     QString statusToString(ScanJob::Status status) const;
 
     KatalogueDatabase m_db;
+    KatalogueSettings m_settings;
     KatalogueScanner m_scanner;
     QThread m_scanThread;
     QHash<uint, ScanJob> m_jobs;

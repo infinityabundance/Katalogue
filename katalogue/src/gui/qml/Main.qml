@@ -79,6 +79,11 @@ Kirigami.ApplicationWindow {
                             text: "Open catalog..."
                             onClicked: openCatalogDialog.open()
                         }
+
+                        Button {
+                            text: "Preferences"
+                            onClicked: root.pageStack.push(Qt.resolvedUrl("PreferencesPage.qml"))
+                        }
                     }
 
                     Row {

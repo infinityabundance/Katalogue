@@ -7,6 +7,8 @@
 #include <QVariantList>
 #include <QVariantMap>
 
+#include "katalogue_settings.h"
+
 class QDBusInterface;
 
 class KatalogueClient : public QObject {
@@ -24,6 +26,12 @@ class KatalogueClient : public QObject {
     Q_PROPERTY(QVariantList virtualFolders READ virtualFolders NOTIFY virtualFoldersChanged)
     Q_PROPERTY(int selectedVirtualFolderId READ selectedVirtualFolderId WRITE setSelectedVirtualFolderId NOTIFY selectedVirtualFolderIdChanged)
     Q_PROPERTY(QVariantList virtualFolderItems READ virtualFolderItems NOTIFY virtualFolderItemsChanged)
+    Q_PROPERTY(bool scannerIncludeHidden READ scannerIncludeHidden WRITE setScannerIncludeHidden NOTIFY settingsChanged)
+    Q_PROPERTY(bool scannerFollowSymlinks READ scannerFollowSymlinks WRITE setScannerFollowSymlinks NOTIFY settingsChanged)
+    Q_PROPERTY(bool scannerComputeHashes READ scannerComputeHashes WRITE setScannerComputeHashes NOTIFY settingsChanged)
+    Q_PROPERTY(int scannerMaxDepth READ scannerMaxDepth WRITE setScannerMaxDepth NOTIFY settingsChanged)
+    Q_PROPERTY(QString scannerExcludePatternsString READ scannerExcludePatternsString WRITE setScannerExcludePatternsString NOTIFY settingsChanged)
+    Q_PROPERTY(bool uiConfirmVirtualFolderDelete READ uiConfirmVirtualFolderDelete WRITE setUiConfirmVirtualFolderDelete NOTIFY settingsChanged)
 
 public:
     explicit KatalogueClient(QObject *parent = nullptr);
@@ -45,6 +53,18 @@ public:
     int selectedVirtualFolderId() const;
     void setSelectedVirtualFolderId(int folderId);
     QVariantList virtualFolderItems() const;
+    bool scannerIncludeHidden() const;
+    void setScannerIncludeHidden(bool value);
+    bool scannerFollowSymlinks() const;
+    void setScannerFollowSymlinks(bool value);
+    bool scannerComputeHashes() const;
+    void setScannerComputeHashes(bool value);
+    int scannerMaxDepth() const;
+    void setScannerMaxDepth(int depth);
+    QString scannerExcludePatternsString() const;
+    void setScannerExcludePatternsString(const QString &patterns);
+    bool uiConfirmVirtualFolderDelete() const;
+    void setUiConfirmVirtualFolderDelete(bool value);
 
     Q_INVOKABLE void openProject(const QString &path);
     Q_INVOKABLE int startScan(const QString &rootPath);
@@ -84,6 +104,7 @@ signals:
     void selectedVolumeIdChanged();
     void selectedDirectoryIdChanged();
     void selectedFileIdChanged();
+    void settingsChanged();
     void directoryEntriesChanged();
     void fileEntriesChanged();
     void activeScansChanged();
@@ -125,6 +146,7 @@ private slots:
     QVariantList m_virtualFolders;
     int m_selectedVirtualFolderId = -1;
     QVariantList m_virtualFolderItems;
+    KatalogueSettings m_settings;
     QHash<int, ScanInfo> m_scans;
     QVariantList m_activeScans;
     int m_selectedVolumeId = -1;

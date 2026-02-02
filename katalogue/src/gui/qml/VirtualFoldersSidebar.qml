@@ -40,7 +40,14 @@ Kirigami.Card {
                     }
                     Button {
                         text: "Delete"
-                        onClicked: KatalogueClient.deleteVirtualFolder(folderId)
+                        onClicked: {
+                            if (KatalogueClient.uiConfirmVirtualFolderDelete) {
+                                confirmDialog.folderId = folderId
+                                confirmDialog.open()
+                            } else {
+                                KatalogueClient.deleteVirtualFolder(folderId)
+                            }
+                        }
                     }
                 }
 
@@ -69,6 +76,23 @@ Kirigami.Card {
                     }
                 }
             }
+        }
+    }
+
+    Dialog {
+        id: confirmDialog
+        modal: true
+        title: "Delete virtual folder"
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        property int folderId: -1
+        onAccepted: {
+            if (folderId >= 0) {
+                KatalogueClient.deleteVirtualFolder(folderId)
+            }
+        }
+        contentItem: Column {
+            spacing: Kirigami.Units.smallSpacing
+            Label { text: "Are you sure you want to delete this virtual folder?" }
         }
     }
 }
