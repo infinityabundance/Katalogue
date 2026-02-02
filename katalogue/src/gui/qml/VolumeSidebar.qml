@@ -20,15 +20,33 @@ Kirigami.Card {
                 width: parent.width
                 height: Kirigami.Units.gridUnit * 2
 
-                Label {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: modelData["label"] || "Unnamed volume"
-                }
-
-                MouseArea {
+                Row {
                     anchors.fill: parent
-                    onClicked: {
-                        KatalogueClient.selectedVolumeId = modelData["id"]
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Label {
+                        id: volumeLabel
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData["label"] || "Unnamed volume"
+                        width: parent.width * 0.6
+                        elide: Text.ElideRight
+                    }
+
+                    MouseArea {
+                        anchors.fill: volumeLabel
+                        onClicked: {
+                            KatalogueClient.selectedVolumeId = modelData["id"]
+                        }
+                    }
+
+                    Button {
+                        text: "Rescan"
+                        onClicked: {
+                            const path = modelData["physical_hint"] || ""
+                            if (path.length > 0) {
+                                KatalogueClient.startScan(path)
+                            }
+                        }
                     }
                 }
             }

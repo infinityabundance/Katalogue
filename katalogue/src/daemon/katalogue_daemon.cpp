@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
+#include <QStorageInfo>
 
 namespace {
 QString defaultProjectPath() {
@@ -43,10 +44,55 @@ uint KatalogueDaemon::StartScan(const QString &rootPath) {
         }
     }
 
+    const QFileInfo rootInfo(rootPath);
+    QStorageInfo storage(rootPath);
+
+    VolumeInfo info;
+    QString label;
+    if (storage.isValid()) {
+        label = storage.displayName();
+    }
+    if (label.trimmed().isEmpty()) {
+        label = rootInfo.fileName();
+    }
+    if (label.trimmed().isEmpty()) {
+        label = rootPath;
+    }
+    info.label = label;
+    info.physicalHint = rootPath;
+    if (storage.isValid()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+        info.fsUuid = storage.deviceUuid();
+#else
+        info.fsUuid = QString::fromUtf8(storage.device());
+#endif
+        info.fsType = storage.fileSystemType();
+        info.totalSize = static_cast<qint64>(storage.bytesTotal());
+    }
+
+    bool existingVolume = false;
+    if (!info.fsUuid.trimmed().isEmpty()) {
+        const auto existing = m_db.findVolumeByFsUuid(info.fsUuid);
+        if (existing.has_value()) {
+            info.id = existing->id;
+            info.createdAt = existing->createdAt;
+            existingVolume = true;
+        }
+    }
+    if (!info.createdAt.isValid()) {
+        info.createdAt = QDateTime::currentDateTimeUtc();
+    }
+    info.updatedAt = QDateTime::currentDateTimeUtc();
+
     ScanJob job;
     job.id = m_nextScanId++;
     job.rootPath = rootPath;
     job.status = ScanJob::Status::Pending;
+    job.volumeInfo = info;
+    job.options.includeHidden = false;
+    job.options.followSymlinks = false;
+    job.options.maxDepth = -1;
+    job.existingVolume = existingVolume;
     m_jobs.insert(job.id, job);
 
     auto *worker = new QObject();
@@ -174,12 +220,19 @@ void KatalogueDaemon::runScan(uint scanId) {
     it->status = ScanJob::Status::Running;
     emit ScanProgress(scanId, it->rootPath, it->stats.directories, it->stats.files, it->stats.totalBytes);
 
-    VolumeInfo info;
-    info.label = QFileInfo(it->rootPath).fileName();
-    info.createdAt = QDateTime::currentDateTimeUtc();
+    if (it->existingVolume) {
+        if (!m_db.clearVolumeContents(it->volumeInfo.id)) {
+            it->status = ScanJob::Status::Failed;
+            emit ScanFinished(scanId, statusToString(it->status));
+            return;
+        }
+    }
 
-    const bool ok = m_scanner.scan(it->rootPath, m_db, info, {}, [this, scanId](const QString &path,
-                                                                              const ScanStats &stats) {
+    const bool ok = m_scanner.scan(it->rootPath,
+                                   m_db,
+                                   it->volumeInfo,
+                                   it->options,
+                                   [this, scanId](const QString &path, const ScanStats &stats) {
         auto jobIt = m_jobs.find(scanId);
         if (jobIt == m_jobs.end()) {
             return false;

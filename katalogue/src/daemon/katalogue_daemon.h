@@ -21,6 +21,9 @@ struct ScanJob {
     Status status = Status::Pending;
     QString rootPath;
     ScanStats stats;
+    VolumeInfo volumeInfo;
+    ScanOptions options;
+    bool existingVolume = false;
 };
 
 class KatalogueDaemon : public QObject {

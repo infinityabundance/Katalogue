@@ -13,6 +13,8 @@ public:
     bool isOpen() const;
 
     int upsertVolume(const VolumeInfo &info);
+    std::optional<VolumeInfo> findVolumeByFsUuid(const QString &fsUuid) const;
+    bool clearVolumeContents(int volumeId);
     int upsertDirectory(const DirectoryInfo &info);
     int insertFile(const FileInfo &info);
     int upsertFile(const FileInfo &info);
