@@ -1,5 +1,7 @@
 #include "katalogue_client.h"
 
+#include <QGuiApplication>
+#include <QClipboard>
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusReply>
@@ -50,6 +52,18 @@ void KatalogueClient::setSelectedDirectoryId(int directoryId) {
     if (m_selectedDirectoryId >= 0) {
         loadDirectory(m_selectedDirectoryId);
     }
+}
+
+int KatalogueClient::selectedFileId() const {
+    return m_selectedFileId;
+}
+
+void KatalogueClient::setSelectedFileId(int fileId) {
+    if (m_selectedFileId == fileId) {
+        return;
+    }
+    m_selectedFileId = fileId;
+    emit selectedFileIdChanged();
 }
 
 QVariantList KatalogueClient::directoryEntries() const {
@@ -338,6 +352,36 @@ void KatalogueClient::removeFileFromVirtualFolder(int folderId, int fileId) {
 
 void KatalogueClient::jumpToVirtualFolderItem(int volumeId, int directoryId) {
     jumpToResult(volumeId, directoryId);
+}
+
+void KatalogueClient::renameVolume(int volumeId, const QString &newLabel) {
+    if (!ensureInterface()) {
+        return;
+    }
+    m_iface->call(QStringLiteral("RenameVolume"), volumeId, newLabel);
+    refreshVolumes();
+}
+
+void KatalogueClient::copyTextToClipboard(const QString &text) {
+    if (auto *clipboard = QGuiApplication::clipboard()) {
+        clipboard->setText(text);
+    }
+}
+
+QVariantMap KatalogueClient::getFileInfo(int fileId) const {
+    for (const auto &entry : m_fileEntries) {
+        const auto map = entry.toMap();
+        if (map.value(QStringLiteral("id")).toInt() == fileId) {
+            return map;
+        }
+    }
+    for (const auto &entry : m_searchResults) {
+        const auto map = entry.toMap();
+        if (map.value(QStringLiteral("fileId")).toInt() == fileId) {
+            return map;
+        }
+    }
+    return {};
 }
 
 void KatalogueClient::refreshProjectInfo() {

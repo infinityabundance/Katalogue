@@ -22,10 +22,18 @@ Kirigami.Card {
                 width: parent.width
                 height: Kirigami.Units.gridUnit * 2
                 property int dirId: modelData["id"]
+                property bool isSelected: dirId === KatalogueClient.selectedDirectoryId
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Kirigami.Units.smallSpacing
+                    color: isSelected ? Kirigami.Theme.highlightColor : "transparent"
+                }
 
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     text: modelData["name"]
+                    color: isSelected ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
                 }
 
                 MouseArea {
@@ -35,6 +43,12 @@ Kirigami.Card {
                     }
                 }
             }
+        }
+
+        Label {
+            visible: KatalogueClient.selectedDirectoryId < 0
+            text: "Select a folder to see its contents."
+            color: "#888888"
         }
     }
 }

@@ -15,6 +15,7 @@ class KatalogueClient : public QObject {
     Q_PROPERTY(QVariantList searchResults READ searchResults NOTIFY searchResultsChanged)
     Q_PROPERTY(int selectedVolumeId READ selectedVolumeId WRITE setSelectedVolumeId NOTIFY selectedVolumeIdChanged)
     Q_PROPERTY(int selectedDirectoryId READ selectedDirectoryId WRITE setSelectedDirectoryId NOTIFY selectedDirectoryIdChanged)
+    Q_PROPERTY(int selectedFileId READ selectedFileId WRITE setSelectedFileId NOTIFY selectedFileIdChanged)
     Q_PROPERTY(QVariantList directoryEntries READ directoryEntries NOTIFY directoryEntriesChanged)
     Q_PROPERTY(QVariantList fileEntries READ fileEntries NOTIFY fileEntriesChanged)
     Q_PROPERTY(QVariantList activeScans READ activeScans NOTIFY activeScansChanged)
@@ -33,6 +34,8 @@ public:
     void setSelectedVolumeId(int volumeId);
     int selectedDirectoryId() const;
     void setSelectedDirectoryId(int directoryId);
+    int selectedFileId() const;
+    void setSelectedFileId(int fileId);
     QVariantList directoryEntries() const;
     QVariantList fileEntries() const;
     QVariantList activeScans() const;
@@ -68,6 +71,9 @@ public:
     Q_INVOKABLE void addFileToVirtualFolder(int folderId, int fileId);
     Q_INVOKABLE void removeFileFromVirtualFolder(int folderId, int fileId);
     Q_INVOKABLE void jumpToVirtualFolderItem(int volumeId, int directoryId);
+    Q_INVOKABLE void renameVolume(int volumeId, const QString &newLabel);
+    Q_INVOKABLE void copyTextToClipboard(const QString &text);
+    Q_INVOKABLE QVariantMap getFileInfo(int fileId) const;
     Q_INVOKABLE void refreshProjectInfo();
     Q_INVOKABLE void loadRootForVolume(int volumeId);
     Q_INVOKABLE void loadDirectory(int directoryId);
@@ -77,6 +83,7 @@ signals:
     void searchResultsChanged();
     void selectedVolumeIdChanged();
     void selectedDirectoryIdChanged();
+    void selectedFileIdChanged();
     void directoryEntriesChanged();
     void fileEntriesChanged();
     void activeScansChanged();
@@ -122,5 +129,6 @@ private slots:
     QVariantList m_activeScans;
     int m_selectedVolumeId = -1;
     int m_selectedDirectoryId = -1;
+    int m_selectedFileId = -1;
     bool m_signalsConnected = false;
 };

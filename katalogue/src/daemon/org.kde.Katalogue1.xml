@@ -103,6 +103,10 @@
       <arg direction="in" type="i" name="folder_id"/>
       <arg direction="in" type="i" name="file_id"/>
     </method>
+    <method name="RenameVolume">
+      <arg direction="in" type="i" name="volume_id"/>
+      <arg direction="in" type="s" name="new_label"/>
+    </method>
     <signal name="ScanProgress">
       <arg type="u" name="scan_id"/>
       <arg type="s" name="path"/>

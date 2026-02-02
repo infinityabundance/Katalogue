@@ -24,6 +24,13 @@ Kirigami.Card {
             delegate: Item {
                 width: parent.width
                 height: Kirigami.Units.gridUnit * 2
+                property bool isSelected: modelData["id"] === KatalogueClient.selectedFileId
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Kirigami.Units.smallSpacing
+                    color: isSelected ? Kirigami.Theme.highlightColor : "transparent"
+                }
 
                 Row {
                     spacing: Kirigami.Units.smallSpacing
@@ -46,120 +53,59 @@ Kirigami.Card {
                     onClicked: {
                         fileCard.selectedFileId = modelData["id"]
                         fileCard.selectedFileInfo = modelData
+                        KatalogueClient.selectedFileId = modelData["id"]
+                        fileDetailsDrawer.fileId = modelData["id"]
+                        fileDetailsDrawer.open()
+                    }
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onPressed: function(mouse) {
+                        if (mouse.button === Qt.RightButton) {
+                            KatalogueClient.selectedFileId = modelData["id"]
+                            fileContextMenu.popup()
+                        }
                     }
                 }
-            }
-        }
 
-        Kirigami.Heading {
-            text: "Details"
-            level: 3
-        }
-
-        Column {
-            spacing: Kirigami.Units.smallSpacing
-
-            Label {
-                text: fileCard.selectedFileId >= 0
-                      ? "File: " + (fileCard.selectedFileInfo["name"] || "")
-                      : "Select a file to edit notes and tags"
-            }
-
-            Label {
-                visible: fileCard.selectedFileId >= 0
-                text: "Size: " + (fileCard.selectedFileInfo["size"] || 0) + " B"
-            }
-
-            Label {
-                visible: fileCard.selectedFileId >= 0
-                text: "Volume: " + (fileCard.selectedFileInfo["volume_label"] || "")
-            }
-
-            Label {
-                visible: fileCard.selectedFileId >= 0
-                text: "Path: " + (fileCard.selectedFileInfo["full_path"] || "")
-                elide: Text.ElideMiddle
-            }
-
-            TextArea {
-                id: noteArea
-                placeholderText: "Notes"
-                visible: fileCard.selectedFileId >= 0
-            }
-
-            Row {
-                spacing: Kirigami.Units.smallSpacing
-                visible: fileCard.selectedFileId >= 0
-
-                TextField {
-                    id: tagKeyField
-                    placeholderText: "Key"
-                    width: parent.width * 0.4
-                }
-                TextField {
-                    id: tagValueField
-                    placeholderText: "Value"
-                    width: parent.width * 0.4
-                }
-                Button {
-                    text: "+"
-                    onClicked: {
-                        if (fileCard.selectedFileId >= 0 && tagKeyField.text.length > 0) {
-                            KatalogueClient.addFileTag(fileCard.selectedFileId,
-                                                       tagKeyField.text,
-                                                       tagValueField.text)
-                            tagKeyField.text = ""
-                            tagValueField.text = ""
-                            tagsModel = KatalogueClient.getFileTags(fileCard.selectedFileId)
+                Menu {
+                    id: fileContextMenu
+                    MenuItem {
+                        text: "Copy full path"
+                        onTriggered: {
+                            const path = modelData["full_path"] || ""
+                            if (path.length > 0) {
+                                KatalogueClient.copyTextToClipboard(path)
+                            }
+                        }
+                    }
+                    MenuItem {
+                        text: "Add to virtual folder…"
+                        enabled: KatalogueClient.selectedVirtualFolderId >= 0
+                        onTriggered: {
+                            KatalogueClient.addFileToVirtualFolder(
+                                KatalogueClient.selectedVirtualFolderId,
+                                modelData["id"])
                         }
                     }
                 }
             }
+        }
+        Label {
+            visible: KatalogueClient.selectedDirectoryId < 0
+            text: "Select a folder from the left to see its files."
+            color: "#888888"
+        }
 
-            ListView {
-                id: tagsList
-                width: parent.width
-                height: Math.min(120, contentHeight)
-                model: tagsModel
-                visible: fileCard.selectedFileId >= 0
-                delegate: Row {
-                    spacing: Kirigami.Units.smallSpacing
-                    Label { text: modelData["key"] + "=" + modelData["value"] }
-                    Button {
-                        text: "×"
-                        onClicked: {
-                            KatalogueClient.removeFileTag(fileCard.selectedFileId,
-                                                          modelData["key"],
-                                                          modelData["value"])
-                            tagsModel = KatalogueClient.getFileTags(fileCard.selectedFileId)
-                        }
-                    }
-                }
-            }
-
-            Row {
-                spacing: Kirigami.Units.smallSpacing
-                visible: fileCard.selectedFileId >= 0
-                Button {
-                    text: "Save"
-                    onClicked: {
-                        KatalogueClient.setFileNote(fileCard.selectedFileId, noteArea.text)
-                    }
-                }
-            }
+        Label {
+            visible: KatalogueClient.selectedDirectoryId >= 0 &&
+                     KatalogueClient.fileEntries.length === 0
+            text: "This folder is empty."
+            color: "#888888"
         }
     }
 
-    property var tagsModel: []
-
-    onSelectedFileIdChanged: {
-        if (selectedFileId >= 0) {
-            noteArea.text = KatalogueClient.getFileNote(selectedFileId)
-            tagsModel = KatalogueClient.getFileTags(selectedFileId)
-        } else {
-            noteArea.text = ""
-            tagsModel = []
-            selectedFileInfo = ({})
-        }
+    FileDetailsDrawer {
+        id: fileDetailsDrawer
+        fileId: KatalogueClient.selectedFileId
     }
+
 }
