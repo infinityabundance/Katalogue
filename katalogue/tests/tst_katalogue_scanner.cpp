@@ -8,6 +8,8 @@ class KatalogueScannerTest : public QObject {
 private slots:
     void testScanTree();
     void testMaxDepth();
+    void testExcludePatterns();
+    void testScanNonexistentPath();
 };
 
 void KatalogueScannerTest::testScanTree() {
@@ -88,6 +90,65 @@ void KatalogueScannerTest::testMaxDepth() {
 
     const auto results = db.searchByName(QStringLiteral("file"));
     QVERIFY(results.isEmpty());
+}
+
+void KatalogueScannerTest::testExcludePatterns() {
+    QTemporaryDir tmp;
+    QVERIFY(tmp.isValid());
+
+    const QString rootPath = tmp.path();
+    QDir dir(rootPath);
+    QVERIFY(dir.mkpath("keep"));
+
+    QFile kept(dir.filePath("keep/good.txt"));
+    QVERIFY(kept.open(QIODevice::WriteOnly));
+    kept.write("keep");
+    kept.close();
+
+    QFile excluded(dir.filePath("keep/skip.log"));
+    QVERIFY(excluded.open(QIODevice::WriteOnly));
+    excluded.write("skip");
+    excluded.close();
+
+    QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    const QString dbPath = dbDir.filePath("exclude.kdcatalog");
+
+    KatalogueDatabase db;
+    QVERIFY(db.openProject(dbPath));
+
+    KatalogueScanner scanner;
+    ScanOptions options;
+    options.excludePatterns = QStringList{QStringLiteral("*.log")};
+
+    QVERIFY(scanner.scan(rootPath, db, {}, options));
+
+    const auto found = db.searchByName(QStringLiteral("good"));
+    QVERIFY(!found.isEmpty());
+
+    const auto skipped = db.searchByName(QStringLiteral("skip"));
+    QVERIFY(skipped.isEmpty());
+}
+
+void KatalogueScannerTest::testScanNonexistentPath() {
+    QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    const QString dbPath = dbDir.filePath("nopath.kdcatalog");
+
+    KatalogueDatabase db;
+    QVERIFY(db.openProject(dbPath));
+
+    KatalogueScanner scanner;
+    QVERIFY(!scanner.scan(QStringLiteral("/nonexistent/path/that/does/not/exist"), db, {}));
+
+    // Verify scan on a file (not a directory) also fails
+    QTemporaryDir tmp;
+    QVERIFY(tmp.isValid());
+    QFile f(QDir(tmp.path()).filePath("afile.txt"));
+    QVERIFY(f.open(QIODevice::WriteOnly));
+    f.write("x");
+    f.close();
+    QVERIFY(!scanner.scan(f.fileName(), db, {}));
 }
 
 QTEST_MAIN(KatalogueScannerTest)

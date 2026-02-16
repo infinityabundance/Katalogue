@@ -1,0 +1,15 @@
+module org.kde.Katalogue
+typeinfo katalogue-gui.qmltypes
+prefer :/org/kde/Katalogue/
+Main 1.0 src/gui/qml/Main.qml
+VolumeSidebar 1.0 src/gui/qml/VolumeSidebar.qml
+DirectoryTree 1.0 src/gui/qml/DirectoryTree.qml
+FileView 1.0 src/gui/qml/FileView.qml
+FileDetailsDrawer 1.0 src/gui/qml/FileDetailsDrawer.qml
+EmptyCatalogPlaceholder 1.0 src/gui/qml/EmptyCatalogPlaceholder.qml
+PreferencesPage 1.0 src/gui/qml/PreferencesPage.qml
+AboutPage 1.0 src/gui/qml/AboutPage.qml
+VirtualFoldersSidebar 1.0 src/gui/qml/VirtualFoldersSidebar.qml
+VirtualFolderItemsView 1.0 src/gui/qml/VirtualFolderItemsView.qml
+depends QtQuick
+

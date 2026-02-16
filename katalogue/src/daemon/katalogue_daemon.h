@@ -34,6 +34,7 @@ class KatalogueDaemon : public QObject, protected QDBusContext {
     Q_CLASSINFO("D-Bus Interface", "org.kde.Katalogue1")
 public:
     explicit KatalogueDaemon(QObject *parent = nullptr);
+    ~KatalogueDaemon() override;
     bool init();
 
 public slots:

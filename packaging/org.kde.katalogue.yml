@@ -1,0 +1,26 @@
+app-id: org.kde.katalogue
+runtime: org.kde.Platform
+runtime-version: '6.8'
+sdk: org.kde.Sdk
+command: katalogue-gui
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --talk-name=org.kde.Katalogue1
+  - --filesystem=host:ro
+  - --own-name=org.kde.Katalogue1
+
+modules:
+  - name: katalogue
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - .git
+          - build
+    subdir: katalogue

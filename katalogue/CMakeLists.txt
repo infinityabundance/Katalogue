@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(Katalogue VERSION 1.0.0 LANGUAGES CXX)
+project(Katalogue VERSION 1.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,11 +19,7 @@ set(KATALOGUE_TRANSLATIONS
     translations/katalogue_en.ts
 )
 
-if (Qt6LinguistTools_FOUND)
-    qt_add_translations(katalogue_translations
-        TS_FILES ${KATALOGUE_TRANSLATIONS}
-    )
-endif()
+# Translations added after katalogue-gui target is defined (see below)
 
 configure_file(
     src/common/katalogue_version.h.in
@@ -41,8 +37,9 @@ target_include_directories(katalogue-core PUBLIC
 )
 
 target_link_libraries(katalogue-core
-    Qt6::Core
-    Qt6::Sql
+    PUBLIC
+        Qt6::Core
+        Qt6::Sql
 )
 
 add_executable(katalogued
@@ -60,9 +57,10 @@ target_include_directories(katalogued PRIVATE
 )
 
 target_link_libraries(katalogued
-    katalogue-core
-    Qt6::Core
-    Qt6::DBus
+    PRIVATE
+        katalogue-core
+        Qt6::Core
+        Qt6::DBus
 )
 
 add_executable(katalogue-export
@@ -75,9 +73,10 @@ target_include_directories(katalogue-export PRIVATE
 )
 
 target_link_libraries(katalogue-export
-    katalogue-core
-    Qt6::Core
-    Qt6::Sql
+    PRIVATE
+        katalogue-core
+        Qt6::Core
+        Qt6::Sql
 )
 
 if(ENABLE_VVV_IMPORT)
@@ -91,9 +90,10 @@ if(ENABLE_VVV_IMPORT)
     )
 
     target_link_libraries(katalogue-import-vvv
-        katalogue-core
-        Qt6::Core
-        Qt6::Sql
+        PRIVATE
+            katalogue-core
+            Qt6::Core
+            Qt6::Sql
     )
 endif()
 
@@ -112,11 +112,12 @@ target_include_directories(katalogue-gui PRIVATE
 )
 
 target_link_libraries(katalogue-gui
-    katalogue-core
-    Qt6::Core
-    Qt6::DBus
-    Qt6::Quick
-    Qt6::Qml
+    PRIVATE
+        katalogue-core
+        Qt6::Core
+        Qt6::DBus
+        Qt6::Quick
+        Qt6::Qml
 )
 
 qt_add_qml_module(katalogue-gui
@@ -135,14 +136,21 @@ qt_add_qml_module(katalogue-gui
         src/gui/qml/VirtualFolderItemsView.qml
 )
 
+if (Qt6LinguistTools_FOUND)
+    qt_add_translations(katalogue-gui
+        TS_FILES ${KATALOGUE_TRANSLATIONS}
+    )
+endif()
+
 add_executable(core_test
     src/core/core_test.cpp
 )
 
 target_link_libraries(core_test
-    katalogue-core
-    Qt6::Core
-    Qt6::Sql
+    PRIVATE
+        katalogue-core
+        Qt6::Core
+        Qt6::Sql
 )
 
 add_test(NAME core_test COMMAND core_test)

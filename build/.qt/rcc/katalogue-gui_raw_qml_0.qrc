@@ -1,0 +1,15 @@
+<RCC>
+  <qresource prefix="/org/kde/Katalogue/">
+    <file alias="src/gui/qml/Main.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/Main.qml</file>
+    <file alias="src/gui/qml/VolumeSidebar.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/VolumeSidebar.qml</file>
+    <file alias="src/gui/qml/DirectoryTree.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/DirectoryTree.qml</file>
+    <file alias="src/gui/qml/FileView.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/FileView.qml</file>
+    <file alias="src/gui/qml/FileDetailsDrawer.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/FileDetailsDrawer.qml</file>
+    <file alias="src/gui/qml/EmptyCatalogPlaceholder.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/EmptyCatalogPlaceholder.qml</file>
+    <file alias="src/gui/qml/PreferencesPage.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/PreferencesPage.qml</file>
+    <file alias="src/gui/qml/AboutPage.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/AboutPage.qml</file>
+    <file alias="src/gui/qml/VirtualFoldersSidebar.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/VirtualFoldersSidebar.qml</file>
+    <file alias="src/gui/qml/VirtualFolderItemsView.qml">/home/one/Katalogue/Katalogue/katalogue/src/gui/qml/VirtualFolderItemsView.qml</file>
+  </qresource>
+</RCC>
+

@@ -1,0 +1,105 @@
+Start testing: Feb 16 14:56 GMT
+----------------------------------------------------------
+1/5 Testing: core_test
+1/5 Test: core_test
+Command: "/home/one/Katalogue/Katalogue/build/core_test"
+Directory: /home/one/Katalogue/Katalogue/build
+"core_test" start time: Feb 16 14:56 GMT
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"core_test" end time: Feb 16 14:56 GMT
+"core_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/5 Testing: tst_katalogue_database
+2/5 Test: tst_katalogue_database
+Command: "/home/one/Katalogue/Katalogue/build/tests/tst_katalogue_database"
+Directory: /home/one/Katalogue/Katalogue/build/tests
+"tst_katalogue_database" start time: Feb 16 14:56 GMT
+Output:
+----------------------------------------------------------
+********* Start testing of KatalogueDatabaseTest *********
+Config: Using QtTest library 6.10.2, Qt 6.10.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 15.2.1 20260103), cachyos unknown
+PASS   : KatalogueDatabaseTest::initTestCase()
+QWARN  : KatalogueDatabaseTest::testOpenProject() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140724607101920' is still in use, all queries will cease to work.
+PASS   : KatalogueDatabaseTest::testOpenProject()
+QWARN  : KatalogueDatabaseTest::testInsertVolumeAndPaths() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140724607101488' is still in use, all queries will cease to work.
+PASS   : KatalogueDatabaseTest::testInsertVolumeAndPaths()
+QWARN  : KatalogueDatabaseTest::testSearch() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140724607101408' is still in use, all queries will cease to work.
+PASS   : KatalogueDatabaseTest::testSearch()
+QWARN  : KatalogueDatabaseTest::testNotesAndTags() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140724607101552' is still in use, all queries will cease to work.
+PASS   : KatalogueDatabaseTest::testNotesAndTags()
+QWARN  : KatalogueDatabaseTest::testVirtualFolders() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140724607101408' is still in use, all queries will cease to work.
+PASS   : KatalogueDatabaseTest::testVirtualFolders()
+QWARN  : KatalogueDatabaseTest::testProjectStatsAndListAllFiles() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140724607101040' is still in use, all queries will cease to work.
+PASS   : KatalogueDatabaseTest::testProjectStatsAndListAllFiles()
+PASS   : KatalogueDatabaseTest::cleanupTestCase()
+Totals: 8 passed, 0 failed, 0 skipped, 0 blacklisted, 5ms
+********* Finished testing of KatalogueDatabaseTest *********
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"tst_katalogue_database" end time: Feb 16 14:56 GMT
+"tst_katalogue_database" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/5 Testing: tst_katalogue_scanner
+3/5 Test: tst_katalogue_scanner
+Command: "/home/one/Katalogue/Katalogue/build/tests/tst_katalogue_scanner"
+Directory: /home/one/Katalogue/Katalogue/build/tests
+"tst_katalogue_scanner" start time: Feb 16 14:56 GMT
+Output:
+----------------------------------------------------------
+********* Start testing of KatalogueScannerTest *********
+Config: Using QtTest library 6.10.2, Qt 6.10.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 15.2.1 20260103), cachyos unknown
+PASS   : KatalogueScannerTest::initTestCase()
+QWARN  : KatalogueScannerTest::testScanTree() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140731122664384' is still in use, all queries will cease to work.
+PASS   : KatalogueScannerTest::testScanTree()
+QWARN  : KatalogueScannerTest::testMaxDepth() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140731122664384' is still in use, all queries will cease to work.
+PASS   : KatalogueScannerTest::testMaxDepth()
+QWARN  : KatalogueScannerTest::testExcludePatterns() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140731122664384' is still in use, all queries will cease to work.
+PASS   : KatalogueScannerTest::testExcludePatterns()
+QWARN  : KatalogueScannerTest::testScanNonexistentPath() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140731122664384' is still in use, all queries will cease to work.
+PASS   : KatalogueScannerTest::testScanNonexistentPath()
+PASS   : KatalogueScannerTest::cleanupTestCase()
+Totals: 6 passed, 0 failed, 0 skipped, 0 blacklisted, 4ms
+********* Finished testing of KatalogueScannerTest *********
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"tst_katalogue_scanner" end time: Feb 16 14:56 GMT
+"tst_katalogue_scanner" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/5 Testing: tst_katalogue_daemon
+4/5 Test: tst_katalogue_daemon
+Command: "/home/one/Katalogue/Katalogue/build/tests/tst_katalogue_daemon"
+Directory: /home/one/Katalogue/Katalogue/build/tests
+"tst_katalogue_daemon" start time: Feb 16 14:56 GMT
+Output:
+----------------------------------------------------------
+********* Start testing of KatalogueDaemonTest *********
+Config: Using QtTest library 6.10.2, Qt 6.10.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 15.2.1 20260103), cachyos unknown
+PASS   : KatalogueDaemonTest::initTestCase()
+QWARN  : KatalogueDaemonTest::testScanAndSearch() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140727560864344' is still in use, all queries will cease to work.
+PASS   : KatalogueDaemonTest::testScanAndSearch()
+QWARN  : KatalogueDaemonTest::testEdgeCases() qt.sql.qsqldatabase: QSqlDatabasePrivate::removeDatabase: connection 'katalogue_core_140727560864344' is still in use, all queries will cease to work.
+PASS   : KatalogueDaemonTest::testEdgeCases()
+PASS   : KatalogueDaemonTest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 53ms
+********* Finished testing of KatalogueDaemonTest *********
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"tst_katalogue_daemon" end time: Feb 16 14:56 GMT
+"tst_katalogue_daemon" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Feb 16 14:56 GMT

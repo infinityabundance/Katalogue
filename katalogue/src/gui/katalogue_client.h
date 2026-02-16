@@ -7,10 +7,10 @@
 #include <QVariantList>
 #include <QVariantMap>
 
+#include <QDBusInterface>
+
 #include "katalogue_settings.h"
 #include "katalogue_version.h"
-
-class QDBusInterface;
 
 class KatalogueClient : public QObject {
     Q_OBJECT
@@ -139,6 +139,7 @@ private slots:
     void onScanProgress(uint scanId, const QString &path, int directories, int files, qint64 bytes);
     void onScanFinished(uint scanId, const QString &status);
 
+private:
     std::unique_ptr<QDBusInterface> m_iface;
     QVariantList m_volumes;
     QVariantList m_searchResults;

@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/org/kde/Katalogue">/home/one/Katalogue/Katalogue/build/org/kde/Katalogue</file>
+
+  </qresource>
+</RCC>

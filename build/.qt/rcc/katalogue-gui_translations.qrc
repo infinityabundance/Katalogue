@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/i18n">
+    <file alias="katalogue_en.qm">/home/one/Katalogue/Katalogue/build/katalogue_en.qm</file>
+  </qresource>
+</RCC>
+

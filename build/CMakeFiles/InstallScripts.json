@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/one/Katalogue/Katalogue/build/cmake_install.cmake",
+		"/home/one/Katalogue/Katalogue/build/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/org/kde/Katalogue">
+    <file alias="qmldir">/home/one/Katalogue/Katalogue/build/org/kde/Katalogue/qmldir</file>
+  </qresource>
+</RCC>
+

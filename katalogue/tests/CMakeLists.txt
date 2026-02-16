@@ -56,3 +56,21 @@ target_include_directories(tst_katalogue_daemon PRIVATE
 )
 
 add_test(NAME tst_katalogue_daemon COMMAND tst_katalogue_daemon)
+
+add_executable(bench_catalog
+    bench_catalog.cpp
+)
+
+target_link_libraries(bench_catalog
+    PRIVATE
+        katalogue-core
+        Qt6::Core
+        Qt6::Sql
+)
+
+target_include_directories(bench_catalog PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/core
+)
+
+add_test(NAME bench_catalog COMMAND bench_catalog)
+set_tests_properties(bench_catalog PROPERTIES LABELS "benchmark")

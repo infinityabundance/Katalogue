@@ -1,0 +1,34 @@
+{
+    "classes": [
+        {
+            "className": "KatalogueSettings",
+            "lineNumber": 7,
+            "object": true,
+            "qualifiedClassName": "KatalogueSettings",
+            "signals": [
+                {
+                    "access": "public",
+                    "index": 0,
+                    "lineNumber": 31,
+                    "name": "scannerSettingsChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 1,
+                    "lineNumber": 32,
+                    "name": "uiSettingsChanged",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "katalogue_settings.h",
+    "outputRevision": 69
+}

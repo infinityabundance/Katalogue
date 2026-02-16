@@ -40,7 +40,7 @@ bool setSchemaVersion(QSqlDatabase &db, int version) {
     return true;
 }
 
-bool tableExists(QSqlDatabase &db, const QString &name) {
+bool tableExists(const QSqlDatabase &db, const QString &name) {
     QSqlQuery query(db);
     query.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?");
     query.addBindValue(name);
@@ -1402,6 +1402,31 @@ QList<SearchResult> KatalogueDatabase::listVirtualFolderItems(int folderId) cons
         results.append(result);
     }
     return results;
+}
+
+bool KatalogueDatabase::beginBatch() {
+    if (!m_db.isOpen() || m_inBatch) {
+        return false;
+    }
+    if (!m_db.transaction()) {
+        qWarning() << "Failed to begin batch transaction" << m_db.lastError();
+        return false;
+    }
+    m_inBatch = true;
+    return true;
+}
+
+bool KatalogueDatabase::endBatch() {
+    if (!m_db.isOpen() || !m_inBatch) {
+        return false;
+    }
+    m_inBatch = false;
+    if (!m_db.commit()) {
+        qWarning() << "Failed to commit batch transaction" << m_db.lastError();
+        m_db.rollback();
+        return false;
+    }
+    return true;
 }
 
 QString KatalogueDatabase::directoryFullPath(int directoryId) const {

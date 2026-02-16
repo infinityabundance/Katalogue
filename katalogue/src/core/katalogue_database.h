@@ -78,6 +78,9 @@ public:
     bool removeFileFromVirtualFolder(int folderId, int fileId);
     QList<SearchResult> listVirtualFolderItems(int folderId) const;
 
+    bool beginBatch();
+    bool endBatch();
+
 private:
     bool initializeSchema();
     QString directoryFullPath(int directoryId) const;
@@ -85,4 +88,5 @@ private:
     QSqlDatabase m_db;
     QString m_connectionName;
     mutable QString m_lastErrorString;
+    bool m_inBatch = false;
 };

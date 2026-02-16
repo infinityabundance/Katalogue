@@ -20,6 +20,13 @@ KatalogueDaemon::KatalogueDaemon(QObject *parent)
     m_scanThread.setObjectName(QStringLiteral("katalogue-scan-thread"));
 }
 
+KatalogueDaemon::~KatalogueDaemon() {
+    if (m_scanThread.isRunning()) {
+        m_scanThread.quit();
+        m_scanThread.wait();
+    }
+}
+
 bool KatalogueDaemon::init() {
     if (m_projectPath.isEmpty()) {
         qCritical() << "Default project path is empty";
@@ -139,11 +146,7 @@ uint KatalogueDaemon::StartScan(const QString &rootPath) {
     info.label = label;
     info.physicalHint = rootPath;
     if (storage.isValid()) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-        info.fsUuid = storage.deviceUuid();
-#else
         info.fsUuid = QString::fromUtf8(storage.device());
-#endif
         info.fsType = storage.fileSystemType();
         info.totalSize = static_cast<qint64>(storage.bytesTotal());
     }

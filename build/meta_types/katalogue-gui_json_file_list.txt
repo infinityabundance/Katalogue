@@ -1,0 +1,2 @@
+/home/one/Katalogue/Katalogue/build/katalogue-gui_autogen/include/../2PZEZPHIBF/moc_katalogue_settings.cpp.json
+/home/one/Katalogue/Katalogue/build/katalogue-gui_autogen/include/../MXUWEOXILK/moc_katalogue_client.cpp.json

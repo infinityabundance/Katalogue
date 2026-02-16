@@ -1,0 +1,5 @@
+core_test 1 0.0352391
+tst_katalogue_database 1 0.00795888
+tst_katalogue_scanner 1 0.00621955
+tst_katalogue_daemon 1 0.0548445
+---

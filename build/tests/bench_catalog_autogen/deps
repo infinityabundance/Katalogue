@@ -1,0 +1,4 @@
+bench_catalog_autogen/timestamp: \
+	/home/one/Katalogue/Katalogue/katalogue/tests/CMakeLists.txt \
+	/home/one/Katalogue/Katalogue/katalogue/tests/bench_catalog.cpp \
+	/usr/bin/cmake

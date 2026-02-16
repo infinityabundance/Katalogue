@@ -1,0 +1,16 @@
+-I
+/home/one/Katalogue/Katalogue/build
+-I
+/home/one/Katalogue/Katalogue/build/org/kde/Katalogue
+-I
+/home/one/Katalogue/Katalogue/build
+-I
+/usr/lib/qt6/qml
+--resource
+/home/one/Katalogue/Katalogue/build/.qt/rcc/qmake_org_kde_Katalogue.qrc
+--resource
+/home/one/Katalogue/Katalogue/build/.qt/rcc/katalogue-gui_raw_qml_0.qrc
+--resource
+/home/one/Katalogue/Katalogue/build/.qt/rcc/katalogue-gui_translations.qrc
+--module
+org.kde.Katalogue

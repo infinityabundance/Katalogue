@@ -1,0 +1,1086 @@
+[
+    {
+        "classes": [
+            {
+                "className": "KatalogueSettings",
+                "lineNumber": 7,
+                "object": true,
+                "qualifiedClassName": "KatalogueSettings",
+                "signals": [
+                    {
+                        "access": "public",
+                        "index": 0,
+                        "lineNumber": 31,
+                        "name": "scannerSettingsChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 1,
+                        "lineNumber": 32,
+                        "name": "uiSettingsChanged",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "katalogue_settings.h",
+        "outputRevision": 69
+    },
+    {
+        "classes": [
+            {
+                "className": "KatalogueClient",
+                "lineNumber": 15,
+                "methods": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "path",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 18,
+                        "lineNumber": 72,
+                        "name": "openProject",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "rootPath",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 19,
+                        "lineNumber": 73,
+                        "name": "startScan",
+                        "returnType": "int"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "scanId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 20,
+                        "lineNumber": 74,
+                        "name": "cancelScan",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "scanId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 21,
+                        "isConst": true,
+                        "lineNumber": 75,
+                        "name": "scanStatus",
+                        "returnType": "QVariantMap"
+                    },
+                    {
+                        "access": "public",
+                        "index": 22,
+                        "lineNumber": 76,
+                        "name": "refreshVolumes",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "limit",
+                                "type": "int"
+                            },
+                            {
+                                "name": "offset",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 23,
+                        "lineNumber": 77,
+                        "name": "searchByName",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "limit",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 24,
+                        "isCloned": true,
+                        "lineNumber": 77,
+                        "name": "searchByName",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 25,
+                        "isCloned": true,
+                        "lineNumber": 77,
+                        "name": "searchByName",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "fileType",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "limit",
+                                "type": "int"
+                            },
+                            {
+                                "name": "offset",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 26,
+                        "lineNumber": 78,
+                        "name": "search",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "fileType",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "limit",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 27,
+                        "isCloned": true,
+                        "lineNumber": 78,
+                        "name": "search",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "fileType",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 28,
+                        "isCloned": true,
+                        "lineNumber": 78,
+                        "name": "search",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 29,
+                        "isCloned": true,
+                        "lineNumber": 78,
+                        "name": "search",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 30,
+                        "isCloned": true,
+                        "lineNumber": 78,
+                        "name": "search",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "directoryId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 31,
+                        "lineNumber": 83,
+                        "name": "jumpToResult",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 32,
+                        "lineNumber": 84,
+                        "name": "getFileNote",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "content",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 33,
+                        "lineNumber": 85,
+                        "name": "setFileNote",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 34,
+                        "lineNumber": 86,
+                        "name": "getFileTags",
+                        "returnType": "QVariantList"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "key",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "value",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 35,
+                        "lineNumber": 87,
+                        "name": "addFileTag",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "key",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "value",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 36,
+                        "lineNumber": 88,
+                        "name": "removeFileTag",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "parentId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 37,
+                        "lineNumber": 89,
+                        "name": "loadVirtualFolderChildren",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "name",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "parentId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 38,
+                        "lineNumber": 90,
+                        "name": "createVirtualFolder",
+                        "returnType": "int"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "folderId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "newName",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 39,
+                        "lineNumber": 91,
+                        "name": "renameVirtualFolder",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "folderId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 40,
+                        "lineNumber": 92,
+                        "name": "deleteVirtualFolder",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "folderId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 41,
+                        "lineNumber": 93,
+                        "name": "loadVirtualFolderItems",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "folderId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 42,
+                        "lineNumber": 94,
+                        "name": "addFileToVirtualFolder",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "folderId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 43,
+                        "lineNumber": 95,
+                        "name": "removeFileFromVirtualFolder",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "directoryId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 44,
+                        "lineNumber": 96,
+                        "name": "jumpToVirtualFolderItem",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "newLabel",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 45,
+                        "lineNumber": 97,
+                        "name": "renameVolume",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "text",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 46,
+                        "lineNumber": 98,
+                        "name": "copyTextToClipboard",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "fileId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 47,
+                        "isConst": true,
+                        "lineNumber": 99,
+                        "name": "getFileInfo",
+                        "returnType": "QVariantMap"
+                    },
+                    {
+                        "access": "public",
+                        "index": 48,
+                        "lineNumber": 100,
+                        "name": "refreshProjectInfo",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "volumeId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 49,
+                        "lineNumber": 101,
+                        "name": "loadRootForVolume",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "directoryId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 50,
+                        "lineNumber": 102,
+                        "name": "loadDirectory",
+                        "returnType": "void"
+                    }
+                ],
+                "object": true,
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 0,
+                        "lineNumber": 17,
+                        "name": "volumes",
+                        "notify": "volumesChanged",
+                        "read": "volumes",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantList",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 1,
+                        "lineNumber": 18,
+                        "name": "searchResults",
+                        "notify": "searchResultsChanged",
+                        "read": "searchResults",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantList",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 2,
+                        "lineNumber": 19,
+                        "name": "selectedVolumeId",
+                        "notify": "selectedVolumeIdChanged",
+                        "read": "selectedVolumeId",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "write": "setSelectedVolumeId"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 3,
+                        "lineNumber": 20,
+                        "name": "selectedDirectoryId",
+                        "notify": "selectedDirectoryIdChanged",
+                        "read": "selectedDirectoryId",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "write": "setSelectedDirectoryId"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 4,
+                        "lineNumber": 21,
+                        "name": "selectedFileId",
+                        "notify": "selectedFileIdChanged",
+                        "read": "selectedFileId",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "write": "setSelectedFileId"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 5,
+                        "lineNumber": 22,
+                        "name": "directoryEntries",
+                        "notify": "directoryEntriesChanged",
+                        "read": "directoryEntries",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantList",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 6,
+                        "lineNumber": 23,
+                        "name": "fileEntries",
+                        "notify": "fileEntriesChanged",
+                        "read": "fileEntries",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantList",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 7,
+                        "lineNumber": 24,
+                        "name": "activeScans",
+                        "notify": "activeScansChanged",
+                        "read": "activeScans",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantList",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 8,
+                        "lineNumber": 25,
+                        "name": "projectPath",
+                        "notify": "projectPathChanged",
+                        "read": "projectPath",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 9,
+                        "lineNumber": 26,
+                        "name": "projectInfo",
+                        "notify": "projectInfoChanged",
+                        "read": "projectInfo",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantMap",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 10,
+                        "lineNumber": 27,
+                        "name": "virtualFolders",
+                        "notify": "virtualFoldersChanged",
+                        "read": "virtualFolders",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantList",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 11,
+                        "lineNumber": 28,
+                        "name": "selectedVirtualFolderId",
+                        "notify": "selectedVirtualFolderIdChanged",
+                        "read": "selectedVirtualFolderId",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "write": "setSelectedVirtualFolderId"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 12,
+                        "lineNumber": 29,
+                        "name": "virtualFolderItems",
+                        "notify": "virtualFolderItemsChanged",
+                        "read": "virtualFolderItems",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVariantList",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 13,
+                        "lineNumber": 30,
+                        "name": "scannerIncludeHidden",
+                        "notify": "settingsChanged",
+                        "read": "scannerIncludeHidden",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "write": "setScannerIncludeHidden"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 14,
+                        "lineNumber": 31,
+                        "name": "scannerFollowSymlinks",
+                        "notify": "settingsChanged",
+                        "read": "scannerFollowSymlinks",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "write": "setScannerFollowSymlinks"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 15,
+                        "lineNumber": 32,
+                        "name": "scannerComputeHashes",
+                        "notify": "settingsChanged",
+                        "read": "scannerComputeHashes",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "write": "setScannerComputeHashes"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 16,
+                        "lineNumber": 33,
+                        "name": "scannerMaxDepth",
+                        "notify": "settingsChanged",
+                        "read": "scannerMaxDepth",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "write": "setScannerMaxDepth"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 17,
+                        "lineNumber": 34,
+                        "name": "scannerExcludePatternsString",
+                        "notify": "settingsChanged",
+                        "read": "scannerExcludePatternsString",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false,
+                        "write": "setScannerExcludePatternsString"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 18,
+                        "lineNumber": 35,
+                        "name": "uiConfirmVirtualFolderDelete",
+                        "notify": "settingsChanged",
+                        "read": "uiConfirmVirtualFolderDelete",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "write": "setUiConfirmVirtualFolderDelete"
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 19,
+                        "lineNumber": 36,
+                        "name": "appVersion",
+                        "read": "appVersion",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false
+                    }
+                ],
+                "qualifiedClassName": "KatalogueClient",
+                "signals": [
+                    {
+                        "access": "public",
+                        "index": 0,
+                        "lineNumber": 105,
+                        "name": "volumesChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 1,
+                        "lineNumber": 106,
+                        "name": "searchResultsChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 2,
+                        "lineNumber": 107,
+                        "name": "selectedVolumeIdChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 3,
+                        "lineNumber": 108,
+                        "name": "selectedDirectoryIdChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 4,
+                        "lineNumber": 109,
+                        "name": "selectedFileIdChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 5,
+                        "lineNumber": 110,
+                        "name": "settingsChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 6,
+                        "lineNumber": 111,
+                        "name": "directoryEntriesChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 7,
+                        "lineNumber": 112,
+                        "name": "fileEntriesChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 8,
+                        "lineNumber": 113,
+                        "name": "activeScansChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 9,
+                        "lineNumber": 114,
+                        "name": "projectPathChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 10,
+                        "lineNumber": 115,
+                        "name": "projectInfoChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 11,
+                        "lineNumber": 116,
+                        "name": "virtualFoldersChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 12,
+                        "lineNumber": 117,
+                        "name": "selectedVirtualFolderIdChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 13,
+                        "lineNumber": 118,
+                        "name": "virtualFolderItemsChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "scanId",
+                                "type": "uint"
+                            },
+                            {
+                                "name": "path",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "directories",
+                                "type": "int"
+                            },
+                            {
+                                "name": "files",
+                                "type": "int"
+                            },
+                            {
+                                "name": "bytes",
+                                "type": "qint64"
+                            }
+                        ],
+                        "index": 14,
+                        "lineNumber": 119,
+                        "name": "scanProgress",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "scanId",
+                                "type": "uint"
+                            },
+                            {
+                                "name": "status",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 15,
+                        "lineNumber": 120,
+                        "name": "scanFinished",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "private",
+                        "arguments": [
+                            {
+                                "name": "scanId",
+                                "type": "uint"
+                            },
+                            {
+                                "name": "path",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "directories",
+                                "type": "int"
+                            },
+                            {
+                                "name": "files",
+                                "type": "int"
+                            },
+                            {
+                                "name": "bytes",
+                                "type": "qint64"
+                            }
+                        ],
+                        "index": 16,
+                        "lineNumber": 139,
+                        "name": "onScanProgress",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "private",
+                        "arguments": [
+                            {
+                                "name": "scanId",
+                                "type": "uint"
+                            },
+                            {
+                                "name": "status",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 17,
+                        "lineNumber": 140,
+                        "name": "onScanFinished",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "katalogue_client.h",
+        "outputRevision": 69
+    }
+]

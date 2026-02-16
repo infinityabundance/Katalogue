@@ -31,4 +31,62 @@ jobs:
         run: cmake --build build --parallel
 
       - name: Test
-        run: dbus-run-session -- ctest --test-dir build --output-on-failure
+        run: dbus-run-session -- ctest --test-dir build --output-on-failure -LE benchmark
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=warning,style,performance \
+            --suppress=missingInclude \
+            --quiet \
+            --error-exitcode=1 \
+            katalogue/src/
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qt6-base-dev qt6-base-dev-tools qt6-declarative-dev \
+            libqt6sql6-sqlite qt6-tools-dev-tools \
+            cmake ninja-build build-essential \
+            dbus-x11
+
+      - name: Build
+        run: |
+          cmake -S katalogue -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build --parallel
+
+      - name: Package
+        run: |
+          DESTDIR=katalogue-release cmake --install build
+          tar czf katalogue-${{ github.ref_name }}-linux-x86_64.tar.gz -C katalogue-release .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: katalogue-*.tar.gz
+          generate_release_notes: true

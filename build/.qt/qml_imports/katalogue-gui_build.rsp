@@ -1,0 +1,15 @@
+-rootPath
+/home/one/Katalogue/Katalogue/katalogue
+-cmake-output
+-output-file
+/home/one/Katalogue/Katalogue/build/.qt/qml_imports/katalogue-gui_build.cmake
+-importPath
+/home/one/Katalogue/Katalogue/build
+-importPath
+/home/one/Katalogue/Katalogue/build/org/kde/Katalogue
+-importPath
+/usr/lib/qt6/qml
+-qrcFiles
+/home/one/Katalogue/Katalogue/build/.qt/rcc/qmake_org_kde_Katalogue.qrc
+/home/one/Katalogue/Katalogue/build/.qt/rcc/katalogue-gui_raw_qml_0.qrc
+/home/one/Katalogue/Katalogue/build/.qt/rcc/katalogue-gui_translations.qrc

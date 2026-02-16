@@ -1,0 +1,16 @@
+--resource
+/home/one/Katalogue/Katalogue/build/.qt/rcc/qmake_org_kde_Katalogue.qrc
+--resource
+/home/one/Katalogue/Katalogue/build/.qt/rcc/katalogue-gui_raw_qml_0.qrc
+--resource
+/home/one/Katalogue/Katalogue/build/.qt/rcc/katalogue-gui_translations.qrc
+/org/kde/Katalogue/src/gui/qml/Main.qml
+/org/kde/Katalogue/src/gui/qml/VolumeSidebar.qml
+/org/kde/Katalogue/src/gui/qml/DirectoryTree.qml
+/org/kde/Katalogue/src/gui/qml/FileView.qml
+/org/kde/Katalogue/src/gui/qml/FileDetailsDrawer.qml
+/org/kde/Katalogue/src/gui/qml/EmptyCatalogPlaceholder.qml
+/org/kde/Katalogue/src/gui/qml/PreferencesPage.qml
+/org/kde/Katalogue/src/gui/qml/AboutPage.qml
+/org/kde/Katalogue/src/gui/qml/VirtualFoldersSidebar.qml
+/org/kde/Katalogue/src/gui/qml/VirtualFolderItemsView.qml

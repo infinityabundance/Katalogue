@@ -84,8 +84,13 @@ bool KatalogueScanner::scan(const QString &rootPath,
     QMimeDatabase mimeDb;
     ScanStats stats;
 
+    constexpr int batchSize = 500;
+    int batchCount = 0;
+    db.beginBatch();
+
     while (it.hasNext()) {
         if (m_cancelled.load() || m_cancelRequested.load(std::memory_order_relaxed)) {
+            db.endBatch();
             return false;
         }
 
@@ -121,6 +126,7 @@ bool KatalogueScanner::scan(const QString &rootPath,
 
             const int dirId = db.upsertDirectory(dirInfo);
             if (dirId < 0) {
+                db.endBatch();
                 return false;
             }
             directoryIds.insert(dirInfo.fullPath, dirId);
@@ -140,6 +146,7 @@ bool KatalogueScanner::scan(const QString &rootPath,
             fileInfo.fileType = mimeDb.mimeTypeForFile(info).name();
 
             if (db.upsertFile(fileInfo) < 0) {
+                db.endBatch();
                 return false;
             }
 
@@ -149,11 +156,25 @@ bool KatalogueScanner::scan(const QString &rootPath,
             continue;
         }
 
-        if (progress) {
-            if (!progress(path, stats)) {
-                return false;
+        ++batchCount;
+        if (batchCount >= batchSize) {
+            db.endBatch();
+            batchCount = 0;
+
+            if (progress) {
+                if (!progress(path, stats)) {
+                    return false;
+                }
             }
+
+            db.beginBatch();
         }
+    }
+
+    db.endBatch();
+
+    if (progress) {
+        progress(rootPath, stats);
     }
 
     return true;
